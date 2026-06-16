@@ -22,7 +22,7 @@ function Index() {
             <h1 className="text-lg font-semibold">Degree Request Portal</h1>
           </div>
           <nav className="flex gap-4 text-sm">
-            <Link to="/auth" className="text-muted-foreground hover:text-foreground">Staff login</Link>
+            <Link to="/staff" className="text-muted-foreground hover:text-foreground">Staff</Link>
           </nav>
         </div>
       </header>

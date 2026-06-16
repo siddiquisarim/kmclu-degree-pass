@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { submitDegreeRequest } from "@/lib/requests.functions";
+import { createRequest, findByCredentials } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,15 +16,12 @@ export const Route = createFileRoute("/request")({
 });
 
 function RequestPage() {
-  const submit = useServerFn(submitDegreeRequest);
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    setLoading(true);
     const f = new FormData(e.currentTarget);
     const payload = {
       enrollment_no: String(f.get("enrollment_no") || "").trim(),
@@ -36,25 +32,20 @@ function RequestPage() {
       email: String(f.get("email") || "").trim(),
       phone: String(f.get("phone") || "").trim(),
     };
-    try {
-      const res = await submit({ data: payload });
-      if (!res.ok) {
-        setError(res.error);
-      } else {
-        navigate({
-          to: "/track",
-          search: {
-            e: payload.enrollment_no,
-            r: payload.roll_no,
-            d: payload.dob,
-          },
-        });
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to submit.");
-    } finally {
-      setLoading(false);
+    if (!payload.enrollment_no || !payload.roll_no || !payload.dob || !payload.full_name || !payload.course) {
+      setError("Please fill all required fields.");
+      return;
     }
+    const existing = findByCredentials(payload.enrollment_no, payload.roll_no, payload.dob);
+    if (existing && existing.status === "pending") {
+      setError("A request with these details is already in progress.");
+      return;
+    }
+    createRequest(payload);
+    navigate({
+      to: "/track",
+      search: { e: payload.enrollment_no, r: payload.roll_no, d: payload.dob },
+    });
   }
 
   return (
@@ -86,9 +77,7 @@ function RequestPage() {
             </div>
           )}
 
-          <Button type="submit" disabled={loading} className="mt-2 w-full">
-            {loading ? "Submitting…" : "Submit request"}
-          </Button>
+          <Button type="submit" className="mt-2 w-full">Submit request</Button>
         </form>
       </main>
     </div>
