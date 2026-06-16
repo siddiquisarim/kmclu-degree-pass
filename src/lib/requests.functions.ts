@@ -162,14 +162,14 @@ export const actOnRequest = createServerFn({ method: "POST" })
     if (data.action === "approve") {
       const next = NEXT[req.current_stage as Stage];
       const isFinal = next === "done";
-      const update: Record<string, unknown> = { current_stage: next };
-      if (isFinal) {
-        update.status = "approved";
-        update.download_url = `/api/public/degree/${req.id}.pdf`;
-      }
       const { error: upErr } = await context.supabase
         .from("degree_requests")
-        .update(update)
+        .update({
+          current_stage: next,
+          ...(isFinal
+            ? { status: "approved" as const, download_url: `/degree/${req.id}` }
+            : {}),
+        })
         .eq("id", req.id);
       if (upErr) return { ok: false as const, error: upErr.message };
 
