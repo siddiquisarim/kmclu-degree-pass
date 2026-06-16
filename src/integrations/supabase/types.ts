@@ -14,16 +14,161 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      degree_requests: {
+        Row: {
+          course: string
+          created_at: string
+          current_stage: Database["public"]["Enums"]["request_stage"]
+          denial_reason: string | null
+          denied_stage: Database["public"]["Enums"]["request_stage"] | null
+          dob: string
+          download_url: string | null
+          email: string | null
+          enrollment_no: string
+          full_name: string
+          id: string
+          phone: string | null
+          roll_no: string
+          status: Database["public"]["Enums"]["request_status"]
+          updated_at: string
+        }
+        Insert: {
+          course: string
+          created_at?: string
+          current_stage?: Database["public"]["Enums"]["request_stage"]
+          denial_reason?: string | null
+          denied_stage?: Database["public"]["Enums"]["request_stage"] | null
+          dob: string
+          download_url?: string | null
+          email?: string | null
+          enrollment_no: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          roll_no: string
+          status?: Database["public"]["Enums"]["request_status"]
+          updated_at?: string
+        }
+        Update: {
+          course?: string
+          created_at?: string
+          current_stage?: Database["public"]["Enums"]["request_stage"]
+          denial_reason?: string | null
+          denied_stage?: Database["public"]["Enums"]["request_stage"] | null
+          dob?: string
+          download_url?: string | null
+          email?: string | null
+          enrollment_no?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          roll_no?: string
+          status?: Database["public"]["Enums"]["request_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      request_approvals: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_name: string | null
+          created_at: string
+          id: string
+          note: string | null
+          request_id: string
+          stage: Database["public"]["Enums"]["request_stage"]
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          request_id: string
+          stage: Database["public"]["Enums"]["request_stage"]
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          request_id?: string
+          stage?: Database["public"]["Enums"]["request_stage"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_approvals_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "degree_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_my_roles: {
+        Args: never
+        Returns: Database["public"]["Enums"]["app_role"][]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "hod" | "library" | "proctor" | "finance" | "coe"
+      request_stage: "hod" | "library" | "proctor" | "finance" | "coe" | "done"
+      request_status: "pending" | "approved" | "denied"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +295,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["hod", "library", "proctor", "finance", "coe"],
+      request_stage: ["hod", "library", "proctor", "finance", "coe", "done"],
+      request_status: ["pending", "approved", "denied"],
+    },
   },
 } as const
