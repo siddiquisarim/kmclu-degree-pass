@@ -1,21 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useState, useEffect, useCallback } from "react";
 import { z } from "zod";
-import { trackDegreeRequest } from "@/lib/requests.functions";
+import { findByCredentials, STAGES, STAGE_LABEL, type DegreeRequest } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-const STAGES = ["hod", "library", "proctor", "finance", "coe"] as const;
-const STAGE_LABEL: Record<string, string> = {
-  hod: "Head of Department",
-  library: "Library",
-  proctor: "Proctor Office",
-  finance: "Finance",
-  coe: "Controller of Examination",
-  done: "Completed",
-};
 
 const searchSchema = z.object({
   e: z.string().optional(),
@@ -34,40 +23,43 @@ export const Route = createFileRoute("/track")({
   component: TrackPage,
 });
 
-type Result = Awaited<ReturnType<typeof trackDegreeRequest>>;
-
 function TrackPage() {
-  const track = useServerFn(trackDegreeRequest);
   const search = Route.useSearch();
-  const [result, setResult] = useState<Result | null>(null);
+  const [request, setRequest] = useState<DegreeRequest | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
   const [form, setForm] = useState({
     enrollment_no: search.e ?? "",
     roll_no: search.r ?? "",
     dob: search.d ?? "",
   });
 
-  async function lookup(values: typeof form) {
+  const lookup = useCallback((values: typeof form) => {
     setError(null);
-    setLoading(true);
-    try {
-      const res = await track({ data: values });
-      setResult(res);
-      if (!res.ok) setError(res.error);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Lookup failed.");
-    } finally {
-      setLoading(false);
+    setSearched(true);
+    const found = findByCredentials(values.enrollment_no, values.roll_no, values.dob);
+    if (!found) {
+      setRequest(null);
+      setError("No request found with these details.");
+    } else {
+      setRequest(found);
     }
-  }
+  }, []);
 
   useEffect(() => {
     if (search.e && search.r && search.d) {
       lookup({ enrollment_no: search.e, roll_no: search.r, dob: search.d });
     }
+    const handler = () => {
+      if (form.enrollment_no && form.roll_no && form.dob) {
+        const found = findByCredentials(form.enrollment_no, form.roll_no, form.dob);
+        if (found) setRequest(found);
+      }
+    };
+    window.addEventListener("kmclu:changed", handler);
+    return () => window.removeEventListener("kmclu:changed", handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [form.enrollment_no, form.roll_no, form.dob]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -115,25 +107,22 @@ function TrackPage() {
               required
             />
           </div>
-          <Button type="submit" disabled={loading}>
-            {loading ? "Checking…" : "Check status"}
-          </Button>
+          <Button type="submit">Check status</Button>
         </form>
 
-        {error && (
+        {error && searched && (
           <div className="mt-6 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
             {error}
           </div>
         )}
 
-        {result && result.ok && <StatusView result={result} />}
+        {request && <StatusView r={request} />}
       </main>
     </div>
   );
 }
 
-function StatusView({ result }: { result: Extract<Result, { ok: true }> }) {
-  const r = result.request;
+function StatusView({ r }: { r: DegreeRequest }) {
   return (
     <div className="mt-8 space-y-6">
       <div className="rounded-md border border-border p-5">
@@ -161,10 +150,16 @@ function StatusView({ result }: { result: Extract<Result, { ok: true }> }) {
           </div>
         )}
 
-        {r.status === "approved" && r.download_url && (
+        {r.status === "approved" && (
           <div className="mt-4 rounded border border-border bg-accent p-3 text-sm">
             <div className="font-medium">Your degree is ready.</div>
-            <a href={r.download_url} className="mt-1 inline-block underline">
+            <a
+              href={`data:text/plain;charset=utf-8,${encodeURIComponent(
+                `KMCLU Degree Certificate\n\nAwarded to: ${r.full_name}\nEnrollment: ${r.enrollment_no}\nRoll: ${r.roll_no}\nCourse: ${r.course}\nIssued: ${new Date(r.updated_at).toLocaleDateString()}`,
+              )}`}
+              download={`KMCLU-Degree-${r.enrollment_no}.txt`}
+              className="mt-1 inline-block underline"
+            >
               Download degree certificate
             </a>
           </div>
@@ -191,13 +186,13 @@ function StatusView({ result }: { result: Extract<Result, { ok: true }> }) {
         </ol>
       </div>
 
-      {result.history.length > 0 && (
+      {r.history.length > 0 && (
         <div>
           <h3 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
             Activity
           </h3>
           <ul className="mt-3 space-y-2 text-sm">
-            {result.history.map((h, i) => (
+            {r.history.map((h, i) => (
               <li key={i} className="rounded-md border border-border px-4 py-2">
                 <div>
                   <span className="font-medium">{STAGE_LABEL[h.stage]}</span> — {h.action}
@@ -215,7 +210,7 @@ function StatusView({ result }: { result: Extract<Result, { ok: true }> }) {
   );
 }
 
-function stageState(stage: string, r: { status: string; current_stage: string; denied_stage: string | null }) {
+function stageState(stage: string, r: DegreeRequest) {
   const order = ["hod", "library", "proctor", "finance", "coe"];
   const idx = order.indexOf(stage);
   const curIdx = order.indexOf(r.current_stage);
