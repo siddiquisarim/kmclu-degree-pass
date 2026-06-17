@@ -3,15 +3,20 @@ import { useEffect, useState, useCallback } from "react";
 import {
   STAGES,
   STAGE_LABEL,
+  DEPARTMENTS,
+  DEPARTMENT_LABEL,
+  DENIAL_REASONS,
   listByStage,
+  listForHod,
   actOn,
   type Stage,
+  type DepartmentCode,
   type DegreeRequest,
 } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 
 const ROLE_KEY = "kmclu_staff_role";
+const DEPT_KEY = "kmclu_staff_dept";
 
 export const Route = createFileRoute("/staff")({
   head: () => ({
@@ -25,18 +30,29 @@ export const Route = createFileRoute("/staff")({
 
 function StaffPage() {
   const [role, setRole] = useState<Stage | null>(null);
+  const [dept, setDept] = useState<DepartmentCode | null>(null);
   const [pending, setPending] = useState<DegreeRequest[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [note, setNote] = useState("");
+  const [reason, setReason] = useState<string>("");
 
   useEffect(() => {
-    const saved = localStorage.getItem(ROLE_KEY) as Stage | null;
-    if (saved && STAGES.includes(saved)) setRole(saved);
+    const savedRole = localStorage.getItem(ROLE_KEY) as Stage | null;
+    const savedDept = localStorage.getItem(DEPT_KEY) as DepartmentCode | null;
+    if (savedRole && STAGES.includes(savedRole)) setRole(savedRole);
+    if (savedDept) setDept(savedDept);
   }, []);
 
+  const needsDept = role === "hod";
+
   const refresh = useCallback(() => {
-    if (role) setPending(listByStage(role));
-  }, [role]);
+    if (!role) return;
+    if (role === "hod") {
+      if (dept) setPending(listForHod(dept));
+      else setPending([]);
+    } else {
+      setPending(listByStage(role));
+    }
+  }, [role, dept]);
 
   useEffect(() => {
     refresh();
@@ -47,23 +63,45 @@ function StaffPage() {
   function pickRole(r: Stage) {
     localStorage.setItem(ROLE_KEY, r);
     setRole(r);
+    if (r !== "hod") {
+      localStorage.removeItem(DEPT_KEY);
+      setDept(null);
+    }
+  }
+
+  function pickDept(d: DepartmentCode) {
+    localStorage.setItem(DEPT_KEY, d);
+    setDept(d);
+  }
+
+  function switchRole() {
+    localStorage.removeItem(ROLE_KEY);
+    localStorage.removeItem(DEPT_KEY);
+    setRole(null);
+    setDept(null);
   }
 
   function act(id: string, action: "approve" | "deny") {
     if (!role) return;
-    if (action === "deny" && !note.trim()) {
-      alert("Please enter a reason for denial.");
+    if (action === "deny" && !reason) {
+      alert("Please select a denial reason.");
       return;
     }
-    const res = actOn(id, role, action, note.trim() || undefined);
+    const res = actOn(id, role, action, action === "deny" ? reason : undefined);
     if (!res.ok) {
       alert(res.error);
       return;
     }
-    setNote("");
+    setReason("");
     setActiveId(null);
     refresh();
   }
+
+  const headerTitle = role
+    ? role === "hod" && dept
+      ? `HOD — ${DEPARTMENT_LABEL[dept]}`
+      : STAGE_LABEL[role]
+    : "Select your department";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -71,20 +109,12 @@ function StaffPage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
           <div>
             <p className="text-xs uppercase tracking-widest text-muted-foreground">KMCLU Staff</p>
-            <h1 className="text-base font-semibold">
-              {role ? STAGE_LABEL[role] : "Select your department"}
-            </h1>
+            <h1 className="text-base font-semibold">{headerTitle}</h1>
           </div>
           <div className="flex items-center gap-4 text-sm">
             <Link to="/" className="text-muted-foreground hover:text-foreground">Home</Link>
             {role && (
-              <button
-                onClick={() => {
-                  localStorage.removeItem(ROLE_KEY);
-                  setRole(null);
-                }}
-                className="text-muted-foreground hover:text-foreground"
-              >
+              <button onClick={switchRole} className="text-muted-foreground hover:text-foreground">
                 Switch role
               </button>
             )}
@@ -116,7 +146,30 @@ function StaffPage() {
           </section>
         )}
 
-        {role && (
+        {role && needsDept && !dept && (
+          <section>
+            <h2 className="text-lg font-medium">Which department do you head?</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              You will only see requests from students of this department.
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+              {DEPARTMENTS.map((d) => (
+                <button
+                  key={d.code}
+                  onClick={() => pickDept(d.code)}
+                  className="rounded-md border border-border p-4 text-left transition hover:border-foreground/40 hover:bg-accent"
+                >
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                    {d.code.toUpperCase()}
+                  </div>
+                  <div className="mt-1 font-medium">{d.name}</div>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {role && (!needsDept || dept) && (
           <section>
             <div className="flex items-baseline justify-between">
               <h2 className="text-lg font-medium">Pending verifications</h2>
@@ -137,7 +190,9 @@ function StaffPage() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="font-medium">{r.full_name}</div>
-                      <div className="text-sm text-muted-foreground">{r.course}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {r.course_name} · {DEPARTMENT_LABEL[r.department]}
+                      </div>
                       <div className="mt-1 text-xs text-muted-foreground">
                         Enrollment {r.enrollment_no} · Roll {r.roll_no} · DOB {r.dob}
                       </div>
@@ -152,7 +207,7 @@ function StaffPage() {
                       size="sm"
                       onClick={() => {
                         setActiveId(activeId === r.id ? null : r.id);
-                        setNote("");
+                        setReason("");
                       }}
                     >
                       {activeId === r.id ? "Cancel" : "Review"}
@@ -161,16 +216,25 @@ function StaffPage() {
 
                   {activeId === r.id && (
                     <div className="mt-4 grid gap-3 border-t border-border pt-4">
-                      <Textarea
-                        placeholder="Optional note (required if denying)"
-                        value={note}
-                        onChange={(e) => setNote(e.target.value)}
-                        maxLength={500}
-                      />
+                      <div className="grid gap-1.5">
+                        <label className="text-xs uppercase tracking-wider text-muted-foreground">
+                          Denial reason (required only if denying)
+                        </label>
+                        <select
+                          value={reason}
+                          onChange={(e) => setReason(e.target.value)}
+                          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                        >
+                          <option value="">Select a reason…</option>
+                          {DENIAL_REASONS[role].map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
                       <div className="flex gap-2">
                         <Button onClick={() => act(r.id, "approve")}>Approve & forward</Button>
                         <Button variant="destructive" onClick={() => act(r.id, "deny")}>
-                          Deny
+                          Deny with reason
                         </Button>
                       </div>
                     </div>

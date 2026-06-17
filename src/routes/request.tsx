@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { createRequest, findByCredentials } from "@/lib/store";
+import { createRequest, findByCredentials, COURSES } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,11 +28,17 @@ function RequestPage() {
       roll_no: String(f.get("roll_no") || "").trim(),
       dob: String(f.get("dob") || ""),
       full_name: String(f.get("full_name") || "").trim(),
-      course: String(f.get("course") || "").trim(),
+      course_code: String(f.get("course_code") || ""),
       email: String(f.get("email") || "").trim(),
       phone: String(f.get("phone") || "").trim(),
     };
-    if (!payload.enrollment_no || !payload.roll_no || !payload.dob || !payload.full_name || !payload.course) {
+    if (
+      !payload.enrollment_no ||
+      !payload.roll_no ||
+      !payload.dob ||
+      !payload.full_name ||
+      !payload.course_code
+    ) {
       setError("Please fill all required fields.");
       return;
     }
@@ -41,7 +47,11 @@ function RequestPage() {
       setError("A request with these details is already in progress.");
       return;
     }
-    createRequest(payload);
+    const res = createRequest(payload);
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
     navigate({
       to: "/track",
       search: { e: payload.enrollment_no, r: payload.roll_no, d: payload.dob },
@@ -59,7 +69,8 @@ function RequestPage() {
       <main className="mx-auto max-w-xl px-6 py-12">
         <h1 className="text-2xl font-semibold">New degree request</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Fill in your details exactly as on your student records.
+          Fill in your details exactly as on your student records. Your request
+          will be routed to the Head of your department first.
         </p>
 
         <form onSubmit={onSubmit} className="mt-8 grid gap-4">
@@ -67,7 +78,23 @@ function RequestPage() {
           <Field label="Enrollment number" name="enrollment_no" required maxLength={40} />
           <Field label="Roll number" name="roll_no" required maxLength={40} />
           <Field label="Date of birth" name="dob" type="date" required />
-          <Field label="Course / Programme" name="course" required maxLength={120} placeholder="e.g. B.Tech CSE" />
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="course_code">Course / Programme</Label>
+            <select
+              id="course_code"
+              name="course_code"
+              required
+              defaultValue=""
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="" disabled>Select your course…</option>
+              {COURSES.map((c) => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
           <Field label="Email (optional)" name="email" type="email" maxLength={200} />
           <Field label="Phone (optional)" name="phone" maxLength={20} />
 
