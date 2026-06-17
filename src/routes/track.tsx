@@ -130,7 +130,7 @@ function StatusView({ r }: { r: DegreeRequest }) {
           <div>
             <div className="text-xs uppercase tracking-wider text-muted-foreground">Applicant</div>
             <div className="mt-0.5 font-medium">{r.full_name}</div>
-            <div className="text-sm text-muted-foreground">{r.course}</div>
+            <div className="text-sm text-muted-foreground">{r.course_name}</div>
             <div className="mt-2 text-xs text-muted-foreground">
               Enrollment {r.enrollment_no} · Roll {r.roll_no}
             </div>
@@ -155,7 +155,7 @@ function StatusView({ r }: { r: DegreeRequest }) {
             <div className="font-medium">Your degree is ready.</div>
             <a
               href={`data:text/plain;charset=utf-8,${encodeURIComponent(
-                `KMCLU Degree Certificate\n\nAwarded to: ${r.full_name}\nEnrollment: ${r.enrollment_no}\nRoll: ${r.roll_no}\nCourse: ${r.course}\nIssued: ${new Date(r.updated_at).toLocaleDateString()}`,
+                `KMCLU Degree Certificate\n\nAwarded to: ${r.full_name}\nEnrollment: ${r.enrollment_no}\nRoll: ${r.roll_no}\nCourse: ${r.course_name}\nIssued: ${new Date(r.updated_at).toLocaleDateString()}`,
               )}`}
               download={`KMCLU-Degree-${r.enrollment_no}.txt`}
               className="mt-1 inline-block underline"
@@ -197,7 +197,7 @@ function StatusView({ r }: { r: DegreeRequest }) {
                 <div>
                   <span className="font-medium">{STAGE_LABEL[h.stage]}</span> — {h.action}
                 </div>
-                {h.note && <div className="mt-1 text-muted-foreground">{h.note}</div>}
+                {h.reason && <div className="mt-1 text-muted-foreground">{h.reason}</div>}
                 <div className="mt-1 text-xs text-muted-foreground">
                   {new Date(h.created_at).toLocaleString()}
                 </div>
