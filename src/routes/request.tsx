@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { createRequest, findByCredentials, COURSES } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/request")({
 });
 
 function RequestPage() {
+  const t = useT();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
@@ -39,12 +41,12 @@ function RequestPage() {
       !payload.full_name ||
       !payload.course_code
     ) {
-      setError("Please fill all required fields.");
+      setError(t("request.err.required"));
       return;
     }
     const existing = findByCredentials(payload.enrollment_no, payload.roll_no, payload.dob);
     if (existing && existing.status === "pending") {
-      setError("A request with these details is already in progress.");
+      setError(t("request.err.duplicate"));
       return;
     }
     const res = createRequest(payload);
@@ -62,25 +64,22 @@ function RequestPage() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-5">
-          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">← Back</Link>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">KMCLU</p>
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">{t("nav.back")}</Link>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">{t("brand.kmclu")}</p>
         </div>
       </header>
       <main className="mx-auto max-w-xl px-6 py-12">
-        <h1 className="text-2xl font-semibold">New degree request</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Fill in your details exactly as on your student records. Your request
-          will be routed to the Head of your department first.
-        </p>
+        <h1 className="text-2xl font-semibold">{t("request.title")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t("request.intro")}</p>
 
         <form onSubmit={onSubmit} className="mt-8 grid gap-4">
-          <Field label="Full name" name="full_name" required maxLength={120} />
-          <Field label="Enrollment number" name="enrollment_no" required maxLength={40} />
-          <Field label="Roll number" name="roll_no" required maxLength={40} />
-          <Field label="Date of birth" name="dob" type="date" required />
+          <Field label={t("request.field.fullName")} name="full_name" required maxLength={120} />
+          <Field label={t("request.field.enrollmentNo")} name="enrollment_no" required maxLength={40} />
+          <Field label={t("request.field.rollNo")} name="roll_no" required maxLength={40} />
+          <Field label={t("request.field.dob")} name="dob" type="date" required />
 
           <div className="grid gap-1.5">
-            <Label htmlFor="course_code">Course / Programme</Label>
+            <Label htmlFor="course_code">{t("request.field.course")}</Label>
             <select
               id="course_code"
               name="course_code"
@@ -88,15 +87,15 @@ function RequestPage() {
               defaultValue=""
               className="h-10 rounded-md border border-input bg-background px-3 text-sm"
             >
-              <option value="" disabled>Select your course…</option>
+              <option value="" disabled>{t("request.field.coursePlaceholder")}</option>
               {COURSES.map((c) => (
-                <option key={c.code} value={c.code}>{c.name}</option>
+                <option key={c.code} value={c.code}>{t(`course.${c.code}`)}</option>
               ))}
             </select>
           </div>
 
-          <Field label="Email (optional)" name="email" type="email" maxLength={200} />
-          <Field label="Phone (optional)" name="phone" maxLength={20} />
+          <Field label={t("request.field.email")} name="email" type="email" maxLength={200} />
+          <Field label={t("request.field.phone")} name="phone" maxLength={20} />
 
           {error && (
             <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
@@ -104,7 +103,7 @@ function RequestPage() {
             </div>
           )}
 
-          <Button type="submit" className="mt-2 w-full">Submit request</Button>
+          <Button type="submit" className="mt-2 w-full">{t("request.submit")}</Button>
         </form>
       </main>
     </div>
