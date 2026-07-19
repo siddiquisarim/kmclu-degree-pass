@@ -109,15 +109,157 @@ export type DegreeRequest = {
 };
 
 const KEY = "kmclu_requests_v1";
+const SEED_KEY = "kmclu_requests_seeded_v1";
 
 function read(): DegreeRequest[] {
   if (typeof window === "undefined") return [];
   try {
+    if (!localStorage.getItem(SEED_KEY)) {
+      localStorage.setItem(KEY, JSON.stringify(buildMockData()));
+      localStorage.setItem(SEED_KEY, "1");
+    }
     const raw = localStorage.getItem(KEY);
     return raw ? (JSON.parse(raw) as DegreeRequest[]) : [];
   } catch {
     return [];
   }
+}
+
+function buildMockData(): DegreeRequest[] {
+  const now = Date.now();
+  const iso = (offsetHours: number) =>
+    new Date(now - offsetHours * 3600_000).toISOString();
+
+  const mk = (
+    partial: Omit<DegreeRequest, "id" | "created_at" | "updated_at" | "history" | "course_name" | "department"> & {
+      created_h: number;
+      updated_h: number;
+      history: HistoryEntry[];
+    },
+  ): DegreeRequest => {
+    const course = courseByCode(partial.course_code)!;
+    return {
+      id: crypto.randomUUID(),
+      enrollment_no: partial.enrollment_no,
+      roll_no: partial.roll_no,
+      dob: partial.dob,
+      full_name: partial.full_name,
+      course_code: partial.course_code,
+      course_name: course.name,
+      department: course.dept,
+      email: partial.email,
+      phone: partial.phone,
+      status: partial.status,
+      current_stage: partial.current_stage,
+      denied_stage: partial.denied_stage ?? null,
+      denial_reason: partial.denial_reason ?? null,
+      download_url: partial.download_url ?? null,
+      created_at: iso(partial.created_h),
+      updated_at: iso(partial.updated_h),
+      history: partial.history,
+    };
+  };
+
+  return [
+    mk({
+      enrollment_no: "KMCLU2020CSE001", roll_no: "CSE-101", dob: "2001-03-14",
+      full_name: "Aarav Sharma", course_code: "btech-cse",
+      email: "aarav.sharma@example.com", phone: "+91 90000 11111",
+      status: "pending", current_stage: "hod",
+      created_h: 3, updated_h: 3, history: [],
+    }),
+    mk({
+      enrollment_no: "KMCLU2020ECE014", roll_no: "ECE-214", dob: "2000-11-02",
+      full_name: "Priya Verma", course_code: "btech-ece",
+      email: "priya.v@example.com",
+      status: "pending", current_stage: "hod",
+      created_h: 8, updated_h: 8, history: [],
+    }),
+    mk({
+      enrollment_no: "KMCLU2019ME022", roll_no: "ME-322", dob: "2000-07-19",
+      full_name: "Rohan Iyer", course_code: "btech-me",
+      status: "pending", current_stage: "library",
+      created_h: 26, updated_h: 20,
+      history: [{ stage: "hod", action: "approved", created_at: iso(20) }],
+    }),
+    mk({
+      enrollment_no: "KMCLU2020BA007", roll_no: "MBA-107", dob: "1999-01-30",
+      full_name: "Neha Kapoor", course_code: "mba",
+      phone: "+91 98888 22233",
+      status: "pending", current_stage: "proctor",
+      created_h: 48, updated_h: 30,
+      history: [
+        { stage: "hod", action: "approved", created_at: iso(40) },
+        { stage: "library", action: "approved", created_at: iso(30) },
+      ],
+    }),
+    mk({
+      enrollment_no: "KMCLU2019SCI010", roll_no: "PHY-210", dob: "2000-05-05",
+      full_name: "Ishaan Gupta", course_code: "bsc-phy",
+      status: "pending", current_stage: "finance",
+      created_h: 72, updated_h: 40,
+      history: [
+        { stage: "hod", action: "approved", created_at: iso(70) },
+        { stage: "library", action: "approved", created_at: iso(60) },
+        { stage: "proctor", action: "approved", created_at: iso(40) },
+      ],
+    }),
+    mk({
+      enrollment_no: "KMCLU2019SCI045", roll_no: "MATH-245", dob: "1999-09-12",
+      full_name: "Sana Ali", course_code: "bsc-math",
+      email: "sana.ali@example.com",
+      status: "pending", current_stage: "coe",
+      created_h: 96, updated_h: 50,
+      history: [
+        { stage: "hod", action: "approved", created_at: iso(90) },
+        { stage: "library", action: "approved", created_at: iso(80) },
+        { stage: "proctor", action: "approved", created_at: iso(70) },
+        { stage: "finance", action: "approved", created_at: iso(50) },
+      ],
+    }),
+    mk({
+      enrollment_no: "KMCLU2019CE033", roll_no: "CE-333", dob: "2000-02-25",
+      full_name: "Karan Mehta", course_code: "btech-ce",
+      status: "denied", current_stage: "library",
+      denied_stage: "library", denial_reason: "Outstanding library fine pending",
+      created_h: 120, updated_h: 90,
+      history: [
+        { stage: "hod", action: "approved", created_at: iso(110) },
+        { stage: "library", action: "denied", reason: "Outstanding library fine pending", created_at: iso(90) },
+      ],
+    }),
+    mk({
+      enrollment_no: "KMCLU2019HUM008", roll_no: "ENG-108", dob: "1999-12-01",
+      full_name: "Meera Nair", course_code: "ba-eng",
+      status: "denied", current_stage: "finance",
+      denied_stage: "finance", denial_reason: "Tuition fee balance pending",
+      created_h: 150, updated_h: 60,
+      history: [
+        { stage: "hod", action: "approved", created_at: iso(140) },
+        { stage: "library", action: "approved", created_at: iso(130) },
+        { stage: "proctor", action: "approved", created_at: iso(100) },
+        { stage: "finance", action: "denied", reason: "Tuition fee balance pending", created_at: iso(60) },
+      ],
+    }),
+    (() => {
+      const r = mk({
+        enrollment_no: "KMCLU2018CSE099", roll_no: "CSE-199", dob: "1998-04-18",
+        full_name: "Vikram Singh", course_code: "btech-cse",
+        email: "vikram.s@example.com",
+        status: "approved", current_stage: "done",
+        created_h: 200, updated_h: 20,
+        history: [
+          { stage: "hod", action: "approved", created_at: iso(190) },
+          { stage: "library", action: "approved", created_at: iso(180) },
+          { stage: "proctor", action: "approved", created_at: iso(150) },
+          { stage: "finance", action: "approved", created_at: iso(100) },
+          { stage: "coe", action: "approved", created_at: iso(20) },
+        ],
+      });
+      r.download_url = `/degree/${r.id}`;
+      return r;
+    })(),
+  ];
 }
 
 function write(list: DegreeRequest[]) {
