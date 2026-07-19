@@ -378,6 +378,8 @@ export function actOn(
 export function resetAll() {
   if (typeof window !== "undefined") {
     localStorage.removeItem(KEY);
+    localStorage.removeItem(SEED_KEY);
     window.dispatchEvent(new Event("kmclu:changed"));
   }
 }
+
