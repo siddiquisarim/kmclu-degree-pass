@@ -2,9 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import {
   STAGES,
-  STAGE_LABEL,
   DEPARTMENTS,
-  DEPARTMENT_LABEL,
   DENIAL_REASONS,
   listByStage,
   listForHod,
@@ -13,6 +11,7 @@ import {
   type DepartmentCode,
   type DegreeRequest,
 } from "@/lib/store";
+import { useT, tReason } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 
 const ROLE_KEY = "kmclu_staff_role";
@@ -29,6 +28,7 @@ export const Route = createFileRoute("/staff")({
 });
 
 function StaffPage() {
+  const t = useT();
   const [role, setRole] = useState<Stage | null>(null);
   const [dept, setDept] = useState<DepartmentCode | null>(null);
   const [pending, setPending] = useState<DegreeRequest[]>([]);
@@ -84,7 +84,7 @@ function StaffPage() {
   function act(id: string, action: "approve" | "deny") {
     if (!role) return;
     if (action === "deny" && !reason) {
-      alert("Please select a denial reason.");
+      alert(t("staff.err.pickReason"));
       return;
     }
     const res = actOn(id, role, action, action === "deny" ? reason : undefined);
@@ -99,23 +99,23 @@ function StaffPage() {
 
   const headerTitle = role
     ? role === "hod" && dept
-      ? `HOD — ${DEPARTMENT_LABEL[dept]}`
-      : STAGE_LABEL[role]
-    : "Select your department";
+      ? t("staff.hodOf", { dept: t(`dept.${dept}`) })
+      : t(`stage.${role}`)
+    : t("staff.selectDept");
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
           <div>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">KMCLU Staff</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">{t("staff.brand")}</p>
             <h1 className="text-base font-semibold">{headerTitle}</h1>
           </div>
           <div className="flex items-center gap-4 text-sm">
-            <Link to="/" className="text-muted-foreground hover:text-foreground">Home</Link>
+            <Link to="/" className="text-muted-foreground hover:text-foreground">{t("nav.home")}</Link>
             {role && (
               <button onClick={switchRole} className="text-muted-foreground hover:text-foreground">
-                Switch role
+                {t("staff.switchRole")}
               </button>
             )}
           </div>
@@ -125,10 +125,8 @@ function StaffPage() {
       <main className="mx-auto max-w-5xl px-6 py-10">
         {!role && (
           <section>
-            <h2 className="text-lg font-medium">Pick your department</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Open this page in different tabs to act as different departments.
-            </p>
+            <h2 className="text-lg font-medium">{t("staff.pickDept.title")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t("staff.pickDept.desc")}</p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
               {STAGES.map((s) => (
                 <button
@@ -137,9 +135,9 @@ function StaffPage() {
                   className="rounded-md border border-border p-4 text-left transition hover:border-foreground/40 hover:bg-accent"
                 >
                   <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Stage {STAGES.indexOf(s) + 1}
+                    {t("common.stage")} {STAGES.indexOf(s) + 1}
                   </div>
-                  <div className="mt-1 font-medium">{STAGE_LABEL[s]}</div>
+                  <div className="mt-1 font-medium">{t(`stage.${s}`)}</div>
                 </button>
               ))}
             </div>
@@ -148,10 +146,8 @@ function StaffPage() {
 
         {role && needsDept && !dept && (
           <section>
-            <h2 className="text-lg font-medium">Which department do you head?</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              You will only see requests from students of this department.
-            </p>
+            <h2 className="text-lg font-medium">{t("staff.pickHodDept.title")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t("staff.pickHodDept.desc")}</p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
               {DEPARTMENTS.map((d) => (
                 <button
@@ -162,7 +158,7 @@ function StaffPage() {
                   <div className="text-xs uppercase tracking-wider text-muted-foreground">
                     {d.code.toUpperCase()}
                   </div>
-                  <div className="mt-1 font-medium">{d.name}</div>
+                  <div className="mt-1 font-medium">{t(`dept.${d.code}`)}</div>
                 </button>
               ))}
             </div>
@@ -172,15 +168,15 @@ function StaffPage() {
         {role && (!needsDept || dept) && (
           <section>
             <div className="flex items-baseline justify-between">
-              <h2 className="text-lg font-medium">Pending verifications</h2>
+              <h2 className="text-lg font-medium">{t("staff.pending")}</h2>
               <button onClick={refresh} className="text-sm text-muted-foreground hover:text-foreground">
-                Refresh
+                {t("common.refresh")}
               </button>
             </div>
 
             {pending.length === 0 && (
               <p className="mt-6 rounded-md border border-border p-6 text-sm text-muted-foreground">
-                No requests waiting for you right now.
+                {t("staff.none")}
               </p>
             )}
 
@@ -191,10 +187,10 @@ function StaffPage() {
                     <div>
                       <div className="font-medium">{r.full_name}</div>
                       <div className="text-sm text-muted-foreground">
-                        {r.course_name} · {DEPARTMENT_LABEL[r.department]}
+                        {t(`course.${r.course_code}`)} · {t(`dept.${r.department}`)}
                       </div>
                       <div className="mt-1 text-xs text-muted-foreground">
-                        Enrollment {r.enrollment_no} · Roll {r.roll_no} · DOB {r.dob}
+                        {t("track.enrollment")} {r.enrollment_no} · {t("track.roll")} {r.roll_no} · {t("track.field.dob")} {r.dob}
                       </div>
                       {(r.email || r.phone) && (
                         <div className="mt-1 text-xs text-muted-foreground">
@@ -210,31 +206,33 @@ function StaffPage() {
                         setReason("");
                       }}
                     >
-                      {activeId === r.id ? "Cancel" : "Review"}
+                      {activeId === r.id ? t("common.cancel") : t("common.review")}
                     </Button>
                   </div>
 
-                  {activeId === r.id && (
+                  {activeId === r.id && role && (
                     <div className="mt-4 grid gap-3 border-t border-border pt-4">
                       <div className="grid gap-1.5">
                         <label className="text-xs uppercase tracking-wider text-muted-foreground">
-                          Denial reason (required only if denying)
+                          {t("staff.denialLabel")}
                         </label>
                         <select
                           value={reason}
                           onChange={(e) => setReason(e.target.value)}
                           className="h-10 rounded-md border border-input bg-background px-3 text-sm"
                         >
-                          <option value="">Select a reason…</option>
-                          {DENIAL_REASONS[role].map((opt) => (
-                            <option key={opt} value={opt}>{opt}</option>
+                          <option value="">{t("staff.denialPlaceholder")}</option>
+                          {DENIAL_REASONS[role].map((opt, i) => (
+                            <option key={opt} value={opt}>
+                              {t(`reason.${role}.${i}`)}
+                            </option>
                           ))}
                         </select>
                       </div>
                       <div className="flex gap-2">
-                        <Button onClick={() => act(r.id, "approve")}>Approve & forward</Button>
+                        <Button onClick={() => act(r.id, "approve")}>{t("common.approve")}</Button>
                         <Button variant="destructive" onClick={() => act(r.id, "deny")}>
-                          Deny with reason
+                          {t("common.deny")}
                         </Button>
                       </div>
                     </div>
