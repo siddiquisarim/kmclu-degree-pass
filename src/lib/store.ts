@@ -347,6 +347,7 @@ export function actOn(
   stage: Stage,
   action: "approve" | "deny",
   reason?: string,
+  extras?: { certificate_name?: string; certificate_data_url?: string },
 ) {
   const list = read();
   const req = list.find((r) => r.id === id);
@@ -364,12 +365,19 @@ export function actOn(
     req.denial_reason = reason;
     req.history.push({ stage, action: "denied", reason, created_at: now });
   } else {
+    if (stage === "coe" && (!extras?.certificate_data_url || !extras?.certificate_name)) {
+      return { ok: false as const, error: "Please upload the degree certificate before approving." };
+    }
     req.history.push({ stage, action: "approved", created_at: now });
     const next = NEXT[stage];
     req.current_stage = next;
     if (next === "done") {
       req.status = "approved";
       req.download_url = `/degree/${req.id}`;
+      if (extras?.certificate_data_url && extras?.certificate_name) {
+        req.certificate_name = extras.certificate_name;
+        req.certificate_data_url = extras.certificate_data_url;
+      }
     }
   }
   req.updated_at = now;
