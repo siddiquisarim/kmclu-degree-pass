@@ -34,6 +34,7 @@ function StaffPage() {
   const [pending, setPending] = useState<DegreeRequest[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [reason, setReason] = useState<string>("");
+  const [certFile, setCertFile] = useState<{ name: string; data_url: string } | null>(null);
 
   useEffect(() => {
     const savedRole = localStorage.getItem(ROLE_KEY) as Stage | null;
@@ -87,14 +88,37 @@ function StaffPage() {
       alert(t("staff.err.pickReason"));
       return;
     }
-    const res = actOn(id, role, action, action === "deny" ? reason : undefined);
+    if (action === "approve" && role === "coe" && !certFile) {
+      alert(t("staff.err.uploadCert"));
+      return;
+    }
+    const res = actOn(
+      id,
+      role,
+      action,
+      action === "deny" ? reason : undefined,
+      action === "approve" && role === "coe" && certFile
+        ? { certificate_name: certFile.name, certificate_data_url: certFile.data_url }
+        : undefined,
+    );
     if (!res.ok) {
       alert(res.error);
       return;
     }
     setReason("");
+    setCertFile(null);
     setActiveId(null);
     refresh();
+  }
+
+  function onCertPick(file: File | null) {
+    if (!file) {
+      setCertFile(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setCertFile({ name: file.name, data_url: String(reader.result) });
+    reader.readAsDataURL(file);
   }
 
   const headerTitle = role
@@ -204,6 +228,7 @@ function StaffPage() {
                       onClick={() => {
                         setActiveId(activeId === r.id ? null : r.id);
                         setReason("");
+                        setCertFile(null);
                       }}
                     >
                       {activeId === r.id ? t("common.cancel") : t("common.review")}
@@ -229,6 +254,23 @@ function StaffPage() {
                           ))}
                         </select>
                       </div>
+                      {role === "coe" && (
+                        <div className="grid gap-1.5">
+                          <label className="text-xs uppercase tracking-wider text-muted-foreground">
+                            {t("staff.uploadLabel")}
+                          </label>
+                          <input
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={(e) => onCertPick(e.target.files?.[0] ?? null)}
+                            className="text-sm file:mr-3 file:rounded-md file:border file:border-border file:bg-background file:px-3 file:py-1.5 file:text-sm"
+                          />
+                          {certFile && (
+                            <div className="text-xs text-muted-foreground">{certFile.name}</div>
+                          )}
+                          <p className="text-xs text-muted-foreground">{t("staff.uploadHint")}</p>
+                        </div>
+                      )}
                       <div className="flex gap-2">
                         <Button onClick={() => act(r.id, "approve")}>{t("common.approve")}</Button>
                         <Button variant="destructive" onClick={() => act(r.id, "deny")}>

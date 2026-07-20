@@ -157,15 +157,25 @@ function StatusView({ r }: { r: DegreeRequest }) {
         {r.status === "approved" && (
           <div className="mt-4 rounded border border-border bg-accent p-3 text-sm">
             <div className="font-medium">{t("track.ready")}</div>
-            <a
-              href={`data:text/plain;charset=utf-8,${encodeURIComponent(
-                `KMCLU Degree Certificate\n\nAwarded to: ${r.full_name}\nEnrollment: ${r.enrollment_no}\nRoll: ${r.roll_no}\nCourse: ${r.course_name}\nIssued: ${new Date(r.updated_at).toLocaleDateString()}`,
-              )}`}
-              download={`KMCLU-Degree-${r.enrollment_no}.txt`}
-              className="mt-1 inline-block underline"
-            >
-              {t("track.download")}
-            </a>
+            {r.certificate_data_url ? (
+              <a
+                href={r.certificate_data_url}
+                download={r.certificate_name ?? `KMCLU-Degree-${r.enrollment_no}`}
+                className="mt-1 inline-block underline"
+              >
+                {t("track.download")}
+              </a>
+            ) : (
+              <a
+                href={`data:text/plain;charset=utf-8,${encodeURIComponent(
+                  `KMCLU Degree Certificate\n\nAwarded to: ${r.full_name}\nEnrollment: ${r.enrollment_no}\nRoll: ${r.roll_no}\nCourse: ${r.course_name}\nIssued: ${new Date(r.updated_at).toLocaleDateString()}`,
+                )}`}
+                download={`KMCLU-Degree-${r.enrollment_no}.txt`}
+                className="mt-1 inline-block underline"
+              >
+                {t("track.download")}
+              </a>
+            )}
           </div>
         )}
       </div>

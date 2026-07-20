@@ -90,6 +90,9 @@ const en: Dict = {
   "staff.denialLabel": "Denial reason (required only if denying)",
   "staff.denialPlaceholder": "Select a reason…",
   "staff.err.pickReason": "Please select a denial reason.",
+  "staff.err.uploadCert": "Please upload the signed degree certificate before approving.",
+  "staff.uploadLabel": "Degree certificate (PDF or image)",
+  "staff.uploadHint": "This file will be available to the student for download once approved.",
   "staff.hodOf": "HOD — {dept}",
 
   // stage labels
@@ -218,6 +221,9 @@ const hi: Dict = {
   "staff.denialLabel": "अस्वीकृति कारण (केवल अस्वीकार करने पर आवश्यक)",
   "staff.denialPlaceholder": "कारण चुनें…",
   "staff.err.pickReason": "कृपया एक अस्वीकृति कारण चुनें।",
+  "staff.err.uploadCert": "कृपया स्वीकृत करने से पहले हस्ताक्षरित डिग्री प्रमाणपत्र अपलोड करें।",
+  "staff.uploadLabel": "डिग्री प्रमाणपत्र (पीडीएफ या छवि)",
+  "staff.uploadHint": "स्वीकृत होने के बाद यह फ़ाइल छात्र को डाउनलोड के लिए उपलब्ध होगी।",
   "staff.hodOf": "विभागाध्यक्ष — {dept}",
 
   "stage.hod": "विभागाध्यक्ष",
