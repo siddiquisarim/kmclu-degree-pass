@@ -103,6 +103,8 @@ export type DegreeRequest = {
   denied_stage?: Stage | null;
   denial_reason?: string | null;
   download_url?: string | null;
+  certificate_name?: string | null;
+  certificate_data_url?: string | null;
   created_at: string;
   updated_at: string;
   history: HistoryEntry[];
