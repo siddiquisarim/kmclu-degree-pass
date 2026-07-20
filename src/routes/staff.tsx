@@ -254,7 +254,23 @@ function StaffPage() {
                           ))}
                         </select>
                       </div>
-                      <div className="flex gap-2">
+                      {role === "coe" && (
+                        <div className="grid gap-1.5">
+                          <label className="text-xs uppercase tracking-wider text-muted-foreground">
+                            {t("staff.uploadLabel")}
+                          </label>
+                          <input
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={(e) => onCertPick(e.target.files?.[0] ?? null)}
+                            className="text-sm file:mr-3 file:rounded-md file:border file:border-border file:bg-background file:px-3 file:py-1.5 file:text-sm"
+                          />
+                          {certFile && (
+                            <div className="text-xs text-muted-foreground">{certFile.name}</div>
+                          )}
+                          <p className="text-xs text-muted-foreground">{t("staff.uploadHint")}</p>
+                        </div>
+                      )}
                         <Button onClick={() => act(r.id, "approve")}>{t("common.approve")}</Button>
                         <Button variant="destructive" onClick={() => act(r.id, "deny")}>
                           {t("common.deny")}
