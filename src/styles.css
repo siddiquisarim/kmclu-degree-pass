@@ -145,5 +145,36 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    background-image:
+      radial-gradient(1200px 500px at 85% -10%, color-mix(in oklab, var(--gold) 14%, transparent), transparent 60%),
+      radial-gradient(900px 500px at -10% 0%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 55%);
+    background-attachment: fixed;
   }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
+  }
+}
+
+@utility crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  background: linear-gradient(140deg, var(--primary), color-mix(in oklab, var(--primary) 60%, black));
+  color: var(--primary-foreground);
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--gold) 55%, transparent);
+}
+
+@utility gold-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
