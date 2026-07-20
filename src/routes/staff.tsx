@@ -271,6 +271,7 @@ function StaffPage() {
                           <p className="text-xs text-muted-foreground">{t("staff.uploadHint")}</p>
                         </div>
                       )}
+                      <div className="flex gap-2">
                         <Button onClick={() => act(r.id, "approve")}>{t("common.approve")}</Button>
                         <Button variant="destructive" onClick={() => act(r.id, "deny")}>
                           {t("common.deny")}
