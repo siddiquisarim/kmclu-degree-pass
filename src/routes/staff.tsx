@@ -88,14 +88,37 @@ function StaffPage() {
       alert(t("staff.err.pickReason"));
       return;
     }
-    const res = actOn(id, role, action, action === "deny" ? reason : undefined);
+    if (action === "approve" && role === "coe" && !certFile) {
+      alert(t("staff.err.uploadCert"));
+      return;
+    }
+    const res = actOn(
+      id,
+      role,
+      action,
+      action === "deny" ? reason : undefined,
+      action === "approve" && role === "coe" && certFile
+        ? { certificate_name: certFile.name, certificate_data_url: certFile.data_url }
+        : undefined,
+    );
     if (!res.ok) {
       alert(res.error);
       return;
     }
     setReason("");
+    setCertFile(null);
     setActiveId(null);
     refresh();
+  }
+
+  function onCertPick(file: File | null) {
+    if (!file) {
+      setCertFile(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setCertFile({ name: file.name, data_url: String(reader.result) });
+    reader.readAsDataURL(file);
   }
 
   const headerTitle = role
