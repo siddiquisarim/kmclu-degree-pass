@@ -228,6 +228,7 @@ function StaffPage() {
                       onClick={() => {
                         setActiveId(activeId === r.id ? null : r.id);
                         setReason("");
+                        setCertFile(null);
                       }}
                     >
                       {activeId === r.id ? t("common.cancel") : t("common.review")}
