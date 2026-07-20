@@ -34,6 +34,7 @@ function StaffPage() {
   const [pending, setPending] = useState<DegreeRequest[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [reason, setReason] = useState<string>("");
+  const [certFile, setCertFile] = useState<{ name: string; data_url: string } | null>(null);
 
   useEffect(() => {
     const savedRole = localStorage.getItem(ROLE_KEY) as Stage | null;
