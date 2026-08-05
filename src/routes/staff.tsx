@@ -209,16 +209,51 @@ function StaffPage() {
                 <li key={r.id} className="rounded-md border border-border p-5">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <div className="font-medium">{r.full_name}</div>
+                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                        {t("track.service")}
+                      </div>
+                      <div className="font-serif text-base font-semibold">
+                        {t(`service.${r.service_code}`)}
+                      </div>
+                      <div className="mt-1 font-medium">{r.full_name}</div>
                       <div className="text-sm text-muted-foreground">
                         {t(`course.${r.course_code}`)} · {t(`dept.${r.department}`)}
                       </div>
                       <div className="mt-1 text-xs text-muted-foreground">
                         {t("track.enrollment")} {r.enrollment_no} · {t("track.roll")} {r.roll_no} · {t("track.field.dob")} {r.dob}
                       </div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {t("track.fee")}: {r.fee === 0 ? t("common.free") : `₹${r.fee}`}
+                      </div>
                       {(r.email || r.phone) && (
                         <div className="mt-1 text-xs text-muted-foreground">
                           {r.email}{r.email && r.phone ? " · " : ""}{r.phone}
+                        </div>
+                      )}
+                      {r.documents.length > 0 && (
+                        <div className="mt-2">
+                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                            {t("track.docs")}
+                          </div>
+                          <ul className="mt-1 space-y-0.5 text-xs">
+                            {r.documents.map((d) => (
+                              <li key={d.doc_type}>
+                                {d.data_url ? (
+                                  <a
+                                    href={d.data_url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="underline"
+                                  >
+                                    {t(`doc.${d.doc_type}`)}
+                                  </a>
+                                ) : (
+                                  <span className="text-muted-foreground">{t(`doc.${d.doc_type}`)}</span>
+                                )}
+                                <span className="text-muted-foreground"> — {d.name}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       )}
                     </div>
@@ -234,6 +269,7 @@ function StaffPage() {
                       {activeId === r.id ? t("common.cancel") : t("common.review")}
                     </Button>
                   </div>
+
 
                   {activeId === r.id && role && (
                     <div className="mt-4 grid gap-3 border-t border-border pt-4">

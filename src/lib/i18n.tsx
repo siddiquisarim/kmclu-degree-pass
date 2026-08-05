@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { DENIAL_REASONS, type Stage } from "@/lib/store";
 
 export type Lang = "en" | "hi";
 
@@ -9,7 +10,7 @@ type Dict = Record<string, string>;
 const en: Dict = {
   // brand / common
   "brand.kmclu": "KMCLU",
-  "brand.portal": "Degree Request Portal",
+  "brand.portal": "Document Request Portal",
   "brand.examCell": "KMCLU Examination Cell",
   "nav.staff": "Staff",
   "nav.home": "Home",
@@ -24,10 +25,10 @@ const en: Dict = {
   "common.reset": "Reset demo data",
 
   // home
-  "home.title": "Request your degree certificate",
+  "home.title": "Request your certificates & documents",
   "home.intro":
     "Submit your details and your request will be verified by each department before your degree is issued. You can track the status anytime using your enrollment number and date of birth.",
-  "home.new.title": "New degree request",
+  "home.new.title": "New request",
   "home.new.desc":
     "Enter your enrollment number, roll number, date of birth and course to start the verification process.",
   "home.track.title": "Track existing request",
@@ -36,9 +37,9 @@ const en: Dict = {
   "home.flow.heading": "Verification flow",
 
   // request form
-  "request.title": "New degree request",
+  "request.title": "New document request",
   "request.intro":
-    "Fill in your details exactly as on your student records. Your request will be routed to the Head of your department first.",
+    "Choose the service you need, fill in your details exactly as on your student records and attach the required documents. The route shown below is where your request will travel.",
   "request.field.fullName": "Full name",
   "request.field.enrollmentNo": "Enrollment number",
   "request.field.rollNo": "Roll number",
@@ -136,15 +137,77 @@ const en: Dict = {
   "reason.proctor.2": "Identity card not surrendered",
   "reason.finance.0": "Tuition fee balance pending",
   "reason.finance.1": "Examination fee not paid",
-  "reason.finance.2": "Refundable caution money form missing",
+  "reason.finance.2": "Service fee not paid",
+  "reason.hostel.0": "Hostel room not vacated",
+  "reason.hostel.1": "Hostel dues pending",
+  "reason.hostel.2": "Hostel property damage charges pending",
   "reason.coe.0": "Examination records incomplete",
   "reason.coe.1": "Grade sheet discrepancy — visit COE office",
   "reason.coe.2": "Result withheld pending re-evaluation",
+  "reason.coe.3": "Submitted documents unclear or incomplete",
+
+  // stages (added)
+  "stage.hostel": "Hostel",
+
+  // services
+  "home.services.heading": "Available services",
+  "home.hostelNote": "* Hostel clearance is added only if you were a hostel resident.",
+  "home.services.desc": "Choose the certificate or correction you need. Each service has its own fee and verification route.",
+  "home.group.certificates": "Certificates",
+  "home.group.corrections": "Corrections & duplicates",
+  "common.fee": "Fee",
+  "common.free": "Free",
+  "common.perSemester": "per semester",
+  "common.route": "Route",
+  "common.docsRequired": "Documents required",
+  "common.noDocs": "No documents required",
+  "common.apply": "Apply",
+
+  "service.degree": "Degree Certificate",
+  "service.transfer_certificate": "Transfer Certificate (Migration)",
+  "service.character_certificate": "Character Certificate",
+  "service.transcript": "Transcript",
+  "service.bonafide": "Bonafide Certificate",
+  "service.provisional_degree": "Provisional Degree",
+  "service.diploma_certificate": "Diploma Certificate",
+  "service.medium_certificate": "Medium Certificate",
+  "service.marksheet_correction": "Marksheet Correction",
+  "service.degree_correction": "Degree Name Correction",
+  "service.duplicate_marksheet": "Duplicate Marksheet",
+  "service.duplicate_degree": "Duplicate Degree",
+
+  "doc.marksheets_all": "All semester marksheets",
+  "doc.final_sem_marksheet": "Final semester marksheet",
+  "doc.highschool_marksheet": "High school marksheet",
+  "doc.intermediate_marksheet": "Intermediate marksheet",
+  "doc.marksheet_to_correct": "Marksheet to be corrected",
+  "doc.degree_copy": "Copy of degree",
+  "doc.fir_copy": "F.I.R. copy",
+  "doc.affidavit": "Affidavit",
+  "doc.application": "Written application",
+
+  // request form (services)
+  "request.field.service": "Service requested",
+  "request.field.servicePlaceholder": "Select a service…",
+  "request.field.hostel": "I am / was a hostel resident (adds hostel clearance)",
+  "request.field.semesters": "Number of semesters to correct",
+  "request.docs.heading": "Required documents",
+  "request.docs.hint": "Attach a scan or photo (PDF, JPG or PNG) of each document.",
+  "request.err.docs": "Please attach all required documents.",
+  "request.payable": "Payable fee",
+
+  // track (services)
+  "track.service": "Service",
+  "track.fee": "Fee",
+  "track.docs": "Submitted documents",
+  "track.selectRequest": "Your requests",
+  "track.ready.generic": "Your document is ready.",
+  "track.download.generic": "Download document",
 };
 
 const hi: Dict = {
   "brand.kmclu": "केएमसीएलयू",
-  "brand.portal": "डिग्री अनुरोध पोर्टल",
+  "brand.portal": "दस्तावेज़ अनुरोध पोर्टल",
   "brand.examCell": "केएमसीएलयू परीक्षा प्रकोष्ठ",
   "nav.staff": "कर्मचारी",
   "nav.home": "होम",
@@ -158,10 +221,10 @@ const hi: Dict = {
   "common.stage": "चरण",
   "common.reset": "डेमो डेटा रीसेट करें",
 
-  "home.title": "अपनी डिग्री प्रमाणपत्र के लिए अनुरोध करें",
+  "home.title": "अपने प्रमाणपत्र एवं दस्तावेज़ के लिए अनुरोध करें",
   "home.intro":
     "अपनी जानकारी जमा करें। आपकी डिग्री जारी होने से पहले प्रत्येक विभाग द्वारा आपके अनुरोध का सत्यापन किया जाएगा। आप अपने नामांकन नंबर और जन्मतिथि से कभी भी स्थिति देख सकते हैं।",
-  "home.new.title": "नया डिग्री अनुरोध",
+  "home.new.title": "नया अनुरोध",
   "home.new.desc":
     "सत्यापन प्रक्रिया शुरू करने के लिए अपना नामांकन नंबर, रोल नंबर, जन्मतिथि और पाठ्यक्रम दर्ज करें।",
   "home.track.title": "मौजूदा अनुरोध ट्रैक करें",
@@ -169,9 +232,9 @@ const hi: Dict = {
     "देखें कि कौन सा विभाग अभी आपके अनुरोध की समीक्षा कर रहा है, या अस्वीकृति का कारण देखें।",
   "home.flow.heading": "सत्यापन प्रक्रिया",
 
-  "request.title": "नया डिग्री अनुरोध",
+  "request.title": "नया दस्तावेज़ अनुरोध",
   "request.intro":
-    "अपना विवरण ठीक वैसा ही भरें जैसा छात्र रिकॉर्ड में है। आपका अनुरोध पहले आपके विभागाध्यक्ष के पास भेजा जाएगा।",
+    "आवश्यक सेवा चुनें, अपना विवरण छात्र रिकॉर्ड के अनुसार भरें और आवश्यक दस्तावेज़ संलग्न करें। नीचे दिखाया गया मार्ग आपके अनुरोध की यात्रा दर्शाता है।",
   "request.field.fullName": "पूरा नाम",
   "request.field.enrollmentNo": "नामांकन संख्या",
   "request.field.rollNo": "रोल नंबर",
@@ -263,10 +326,68 @@ const hi: Dict = {
   "reason.proctor.2": "पहचान पत्र जमा नहीं किया गया",
   "reason.finance.0": "ट्यूशन फीस शेष है",
   "reason.finance.1": "परीक्षा शुल्क का भुगतान नहीं किया गया",
-  "reason.finance.2": "वापसी योग्य कॉशन मनी फ़ॉर्म गायब है",
+  "reason.finance.2": "सेवा शुल्क का भुगतान नहीं किया गया",
+  "reason.hostel.0": "हॉस्टल कक्ष खाली नहीं किया गया",
+  "reason.hostel.1": "हॉस्टल का बकाया शेष है",
+  "reason.hostel.2": "हॉस्टल संपत्ति क्षति शुल्क शेष है",
   "reason.coe.0": "परीक्षा रिकॉर्ड अधूरे हैं",
   "reason.coe.1": "ग्रेड शीट में असंगति — सीओई कार्यालय जाएँ",
   "reason.coe.2": "पुनर्मूल्यांकन के लिए परिणाम रोका गया",
+  "reason.coe.3": "जमा किए गए दस्तावेज़ अस्पष्ट या अपूर्ण हैं",
+
+  "stage.hostel": "हॉस्टल",
+
+  "home.services.heading": "उपलब्ध सेवाएँ",
+  "home.hostelNote": "* हॉस्टल अनापत्ति केवल हॉस्टल निवासियों के लिए जोड़ी जाती है।",
+  "home.services.desc": "आपको जो प्रमाणपत्र या सुधार चाहिए उसे चुनें। प्रत्येक सेवा का अपना शुल्क और सत्यापन मार्ग है।",
+  "home.group.certificates": "प्रमाणपत्र",
+  "home.group.corrections": "सुधार एवं द्वितीय प्रति",
+  "common.fee": "शुल्क",
+  "common.free": "निःशुल्क",
+  "common.perSemester": "प्रति सेमेस्टर",
+  "common.route": "मार्ग",
+  "common.docsRequired": "आवश्यक दस्तावेज़",
+  "common.noDocs": "कोई दस्तावेज़ आवश्यक नहीं",
+  "common.apply": "आवेदन करें",
+
+  "service.degree": "डिग्री प्रमाणपत्र",
+  "service.transfer_certificate": "स्थानांतरण प्रमाणपत्र (माइग्रेशन)",
+  "service.character_certificate": "चरित्र प्रमाणपत्र",
+  "service.transcript": "ट्रांसक्रिप्ट",
+  "service.bonafide": "बोनाफाइड प्रमाणपत्र",
+  "service.provisional_degree": "प्रोविज़नल डिग्री",
+  "service.diploma_certificate": "डिप्लोमा प्रमाणपत्र",
+  "service.medium_certificate": "माध्यम प्रमाणपत्र",
+  "service.marksheet_correction": "अंकपत्र सुधार",
+  "service.degree_correction": "डिग्री नाम सुधार",
+  "service.duplicate_marksheet": "द्वितीय प्रति अंकपत्र",
+  "service.duplicate_degree": "द्वितीय प्रति डिग्री",
+
+  "doc.marksheets_all": "सभी सेमेस्टर के अंकपत्र",
+  "doc.final_sem_marksheet": "अंतिम सेमेस्टर का अंकपत्र",
+  "doc.highschool_marksheet": "हाईस्कूल अंकपत्र",
+  "doc.intermediate_marksheet": "इंटरमीडिएट अंकपत्र",
+  "doc.marksheet_to_correct": "सुधार हेतु अंकपत्र",
+  "doc.degree_copy": "डिग्री की प्रति",
+  "doc.fir_copy": "एफ.आई.आर. प्रति",
+  "doc.affidavit": "शपथ पत्र",
+  "doc.application": "लिखित आवेदन",
+
+  "request.field.service": "अनुरोधित सेवा",
+  "request.field.servicePlaceholder": "सेवा चुनें…",
+  "request.field.hostel": "मैं हॉस्टल निवासी हूँ / था (हॉस्टल अनापत्ति जोड़ें)",
+  "request.field.semesters": "सुधार हेतु सेमेस्टर की संख्या",
+  "request.docs.heading": "आवश्यक दस्तावेज़",
+  "request.docs.hint": "प्रत्येक दस्तावेज़ की स्कैन प्रति या फ़ोटो (PDF, JPG या PNG) संलग्न करें।",
+  "request.err.docs": "कृपया सभी आवश्यक दस्तावेज़ संलग्न करें।",
+  "request.payable": "देय शुल्क",
+
+  "track.service": "सेवा",
+  "track.fee": "शुल्क",
+  "track.docs": "जमा किए गए दस्तावेज़",
+  "track.selectRequest": "आपके अनुरोध",
+  "track.ready.generic": "आपका दस्तावेज़ तैयार है।",
+  "track.download.generic": "दस्तावेज़ डाउनलोड करें",
 };
 
 const DICTS: Record<Lang, Dict> = { en, hi };
@@ -274,14 +395,11 @@ const DICTS: Record<Lang, Dict> = { en, hi };
 // Map English strings that get stored in data (denial reasons, stored labels)
 // to translation keys so we can display them in either language.
 export const REASON_KEY_BY_EN: Record<string, string> = {};
-[
-  "hod.0","hod.1","hod.2","hod.3",
-  "library.0","library.1","library.2",
-  "proctor.0","proctor.1","proctor.2",
-  "finance.0","finance.1","finance.2",
-  "coe.0","coe.1","coe.2",
-].forEach((k) => {
-  REASON_KEY_BY_EN[en[`reason.${k}`]] = `reason.${k}`;
+(Object.keys(DENIAL_REASONS) as Stage[]).forEach((stage) => {
+  DENIAL_REASONS[stage].forEach((_reason: string, i: number) => {
+    const key = `reason.${stage}.${i}`;
+    if (en[key]) REASON_KEY_BY_EN[en[key]] = key;
+  });
 });
 
 type I18nCtx = {
