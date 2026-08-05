@@ -10,7 +10,7 @@ type Dict = Record<string, string>;
 const en: Dict = {
   // brand / common
   "brand.kmclu": "KMCLU",
-  "brand.portal": "Degree Request Portal",
+  "brand.portal": "Document Request Portal",
   "brand.examCell": "KMCLU Examination Cell",
   "nav.staff": "Staff",
   "nav.home": "Home",
@@ -25,10 +25,10 @@ const en: Dict = {
   "common.reset": "Reset demo data",
 
   // home
-  "home.title": "Request your degree certificate",
+  "home.title": "Request your certificates & documents",
   "home.intro":
     "Submit your details and your request will be verified by each department before your degree is issued. You can track the status anytime using your enrollment number and date of birth.",
-  "home.new.title": "New degree request",
+  "home.new.title": "New request",
   "home.new.desc":
     "Enter your enrollment number, roll number, date of birth and course to start the verification process.",
   "home.track.title": "Track existing request",
@@ -37,7 +37,7 @@ const en: Dict = {
   "home.flow.heading": "Verification flow",
 
   // request form
-  "request.title": "New degree request",
+  "request.title": "New document request",
   "request.intro":
     "Fill in your details exactly as on your student records. Your request will be routed to the Head of your department first.",
   "request.field.fullName": "Full name",
@@ -151,6 +151,7 @@ const en: Dict = {
 
   // services
   "home.services.heading": "Available services",
+  "home.hostelNote": "* Hostel clearance is added only if you were a hostel resident.",
   "home.services.desc": "Choose the certificate or correction you need. Each service has its own fee and verification route.",
   "home.group.certificates": "Certificates",
   "home.group.corrections": "Corrections & duplicates",
@@ -206,7 +207,7 @@ const en: Dict = {
 
 const hi: Dict = {
   "brand.kmclu": "केएमसीएलयू",
-  "brand.portal": "डिग्री अनुरोध पोर्टल",
+  "brand.portal": "दस्तावेज़ अनुरोध पोर्टल",
   "brand.examCell": "केएमसीएलयू परीक्षा प्रकोष्ठ",
   "nav.staff": "कर्मचारी",
   "nav.home": "होम",
@@ -220,10 +221,10 @@ const hi: Dict = {
   "common.stage": "चरण",
   "common.reset": "डेमो डेटा रीसेट करें",
 
-  "home.title": "अपनी डिग्री प्रमाणपत्र के लिए अनुरोध करें",
+  "home.title": "अपने प्रमाणपत्र एवं दस्तावेज़ के लिए अनुरोध करें",
   "home.intro":
     "अपनी जानकारी जमा करें। आपकी डिग्री जारी होने से पहले प्रत्येक विभाग द्वारा आपके अनुरोध का सत्यापन किया जाएगा। आप अपने नामांकन नंबर और जन्मतिथि से कभी भी स्थिति देख सकते हैं।",
-  "home.new.title": "नया डिग्री अनुरोध",
+  "home.new.title": "नया अनुरोध",
   "home.new.desc":
     "सत्यापन प्रक्रिया शुरू करने के लिए अपना नामांकन नंबर, रोल नंबर, जन्मतिथि और पाठ्यक्रम दर्ज करें।",
   "home.track.title": "मौजूदा अनुरोध ट्रैक करें",
@@ -231,7 +232,7 @@ const hi: Dict = {
     "देखें कि कौन सा विभाग अभी आपके अनुरोध की समीक्षा कर रहा है, या अस्वीकृति का कारण देखें।",
   "home.flow.heading": "सत्यापन प्रक्रिया",
 
-  "request.title": "नया डिग्री अनुरोध",
+  "request.title": "नया दस्तावेज़ अनुरोध",
   "request.intro":
     "अपना विवरण ठीक वैसा ही भरें जैसा छात्र रिकॉर्ड में है। आपका अनुरोध पहले आपके विभागाध्यक्ष के पास भेजा जाएगा।",
   "request.field.fullName": "पूरा नाम",
@@ -337,6 +338,7 @@ const hi: Dict = {
   "stage.hostel": "हॉस्टल",
 
   "home.services.heading": "उपलब्ध सेवाएँ",
+  "home.hostelNote": "* हॉस्टल अनापत्ति केवल हॉस्टल निवासियों के लिए जोड़ी जाती है।",
   "home.services.desc": "आपको जो प्रमाणपत्र या सुधार चाहिए उसे चुनें। प्रत्येक सेवा का अपना शुल्क और सत्यापन मार्ग है।",
   "home.group.certificates": "प्रमाणपत्र",
   "home.group.corrections": "सुधार एवं द्वितीय प्रति",
