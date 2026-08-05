@@ -39,7 +39,7 @@ const en: Dict = {
   // request form
   "request.title": "New document request",
   "request.intro":
-    "Fill in your details exactly as on your student records. Your request will be routed to the Head of your department first.",
+    "Choose the service you need, fill in your details exactly as on your student records and attach the required documents. The route shown below is where your request will travel.",
   "request.field.fullName": "Full name",
   "request.field.enrollmentNo": "Enrollment number",
   "request.field.rollNo": "Roll number",
