@@ -85,6 +85,8 @@ function Index() {
             <div className="gold-rule flex-1" />
           </div>
           <p className="mt-3 max-w-2xl text-sm text-muted-foreground">{t("home.services.desc")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("home.hostelNote")}</p>
+
 
           {groups.map((g) => (
             <div key={g.key} className="mt-8">
