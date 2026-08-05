@@ -136,10 +136,71 @@ const en: Dict = {
   "reason.proctor.2": "Identity card not surrendered",
   "reason.finance.0": "Tuition fee balance pending",
   "reason.finance.1": "Examination fee not paid",
-  "reason.finance.2": "Refundable caution money form missing",
+  "reason.finance.2": "Service fee not paid",
+  "reason.hostel.0": "Hostel room not vacated",
+  "reason.hostel.1": "Hostel dues pending",
+  "reason.hostel.2": "Hostel property damage charges pending",
   "reason.coe.0": "Examination records incomplete",
   "reason.coe.1": "Grade sheet discrepancy — visit COE office",
   "reason.coe.2": "Result withheld pending re-evaluation",
+  "reason.coe.3": "Submitted documents unclear or incomplete",
+
+  // stages (added)
+  "stage.hostel": "Hostel",
+
+  // services
+  "home.services.heading": "Available services",
+  "home.services.desc": "Choose the certificate or correction you need. Each service has its own fee and verification route.",
+  "home.group.certificates": "Certificates",
+  "home.group.corrections": "Corrections & duplicates",
+  "common.fee": "Fee",
+  "common.free": "Free",
+  "common.perSemester": "per semester",
+  "common.route": "Route",
+  "common.docsRequired": "Documents required",
+  "common.noDocs": "No documents required",
+  "common.apply": "Apply",
+
+  "service.degree": "Degree Certificate",
+  "service.transfer_certificate": "Transfer Certificate (Migration)",
+  "service.character_certificate": "Character Certificate",
+  "service.transcript": "Transcript",
+  "service.bonafide": "Bonafide Certificate",
+  "service.provisional_degree": "Provisional Degree",
+  "service.diploma_certificate": "Diploma Certificate",
+  "service.medium_certificate": "Medium Certificate",
+  "service.marksheet_correction": "Marksheet Correction",
+  "service.degree_correction": "Degree Name Correction",
+  "service.duplicate_marksheet": "Duplicate Marksheet",
+  "service.duplicate_degree": "Duplicate Degree",
+
+  "doc.marksheets_all": "All semester marksheets",
+  "doc.final_sem_marksheet": "Final semester marksheet",
+  "doc.highschool_marksheet": "High school marksheet",
+  "doc.intermediate_marksheet": "Intermediate marksheet",
+  "doc.marksheet_to_correct": "Marksheet to be corrected",
+  "doc.degree_copy": "Copy of degree",
+  "doc.fir_copy": "F.I.R. copy",
+  "doc.affidavit": "Affidavit",
+  "doc.application": "Written application",
+
+  // request form (services)
+  "request.field.service": "Service requested",
+  "request.field.servicePlaceholder": "Select a service…",
+  "request.field.hostel": "I am / was a hostel resident (adds hostel clearance)",
+  "request.field.semesters": "Number of semesters to correct",
+  "request.docs.heading": "Required documents",
+  "request.docs.hint": "Attach a scan or photo (PDF, JPG or PNG) of each document.",
+  "request.err.docs": "Please attach all required documents.",
+  "request.payable": "Payable fee",
+
+  // track (services)
+  "track.service": "Service",
+  "track.fee": "Fee",
+  "track.docs": "Submitted documents",
+  "track.selectRequest": "Your requests",
+  "track.ready.generic": "Your document is ready.",
+  "track.download.generic": "Download document",
 };
 
 const hi: Dict = {
