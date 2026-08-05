@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import { z } from "zod";
-import { findByCredentials, STAGES, type DegreeRequest } from "@/lib/store";
+import { listByCredentials, type DegreeRequest } from "@/lib/store";
 import { useT, tReason } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,9 @@ export const Route = createFileRoute("/track")({
   head: () => ({
     meta: [
       { title: "Track request — KMCLU" },
-      { name: "description", content: "Track your degree request status." },
+      { name: "description", content: "Track the verification status of your KMCLU document requests." },
+      { property: "og:title", content: "Track request — KMCLU" },
+      { property: "og:description", content: "Track the verification status of your KMCLU document requests." },
     ],
   }),
   validateSearch: searchSchema,
@@ -27,7 +29,7 @@ export const Route = createFileRoute("/track")({
 function TrackPage() {
   const t = useT();
   const search = Route.useSearch();
-  const [request, setRequest] = useState<DegreeRequest | null>(null);
+  const [requests, setRequests] = useState<DegreeRequest[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
   const [form, setForm] = useState({
@@ -39,13 +41,9 @@ function TrackPage() {
   const lookup = useCallback((values: typeof form) => {
     setError(null);
     setSearched(true);
-    const found = findByCredentials(values.enrollment_no, values.roll_no, values.dob);
-    if (!found) {
-      setRequest(null);
-      setError(t("track.err.notFound"));
-    } else {
-      setRequest(found);
-    }
+    const found = listByCredentials(values.enrollment_no, values.roll_no, values.dob);
+    setRequests(found);
+    if (found.length === 0) setError(t("track.err.notFound"));
   }, [t]);
 
   useEffect(() => {
@@ -54,8 +52,7 @@ function TrackPage() {
     }
     const handler = () => {
       if (form.enrollment_no && form.roll_no && form.dob) {
-        const found = findByCredentials(form.enrollment_no, form.roll_no, form.dob);
-        if (found) setRequest(found);
+        setRequests(listByCredentials(form.enrollment_no, form.roll_no, form.dob));
       }
     };
     window.addEventListener("kmclu:changed", handler);
@@ -72,7 +69,7 @@ function TrackPage() {
         </div>
       </header>
       <main className="mx-auto max-w-2xl px-6 py-12">
-        <h1 className="text-2xl font-semibold">{t("track.title")}</h1>
+        <h1 className="font-serif text-2xl font-semibold">{t("track.title")}</h1>
 
         <form
           onSubmit={(e) => {
@@ -118,7 +115,16 @@ function TrackPage() {
           </div>
         )}
 
-        {request && <StatusView r={request} />}
+        {requests.length > 0 && (
+          <>
+            <h2 className="mt-10 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+              {t("track.selectRequest")}
+            </h2>
+            {requests.map((r) => (
+              <StatusView key={r.id} r={r} />
+            ))}
+          </>
+        )}
       </main>
     </div>
   );
@@ -128,19 +134,34 @@ function StatusView({ r }: { r: DegreeRequest }) {
   const t = useT();
   const deniedStageLabel = r.denied_stage ? t(`stage.${r.denied_stage}`) : "";
   return (
-    <div className="mt-8 space-y-6">
-      <div className="rounded-md border border-border p-5">
+    <div className="mt-6 space-y-6 rounded-lg border border-border bg-card p-5 shadow-sm">
+      <div>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">{t("track.applicant")}</div>
-            <div className="mt-0.5 font-medium">{r.full_name}</div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">{t("track.service")}</div>
+            <div className="mt-0.5 font-serif text-lg font-semibold">{t(`service.${r.service_code}`)}</div>
+            <div className="mt-2 text-sm">{r.full_name}</div>
             <div className="text-sm text-muted-foreground">{t(`course.${r.course_code}`)}</div>
             <div className="mt-2 text-xs text-muted-foreground">
               {t("track.enrollment")} {r.enrollment_no} · {t("track.roll")} {r.roll_no}
             </div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              {t("track.fee")}: {r.fee === 0 ? t("common.free") : `₹${r.fee}`}
+            </div>
           </div>
           <StatusBadge status={r.status} />
         </div>
+
+        {r.documents.length > 0 && (
+          <div className="mt-4">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">{t("track.docs")}</div>
+            <ul className="mt-1 text-xs text-muted-foreground">
+              {r.documents.map((d) => (
+                <li key={d.doc_type}>• {t(`doc.${d.doc_type}`)} — {d.name}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {r.status === "denied" && (
           <div className="mt-4 rounded border border-destructive/40 bg-destructive/10 p-3 text-sm">
@@ -156,24 +177,24 @@ function StatusView({ r }: { r: DegreeRequest }) {
 
         {r.status === "approved" && (
           <div className="mt-4 rounded border border-border bg-accent p-3 text-sm">
-            <div className="font-medium">{t("track.ready")}</div>
+            <div className="font-medium">{t("track.ready.generic")}</div>
             {r.certificate_data_url ? (
               <a
                 href={r.certificate_data_url}
-                download={r.certificate_name ?? `KMCLU-Degree-${r.enrollment_no}`}
+                download={r.certificate_name ?? `KMCLU-${r.service_code}-${r.enrollment_no}`}
                 className="mt-1 inline-block underline"
               >
-                {t("track.download")}
+                {t("track.download.generic")}
               </a>
             ) : (
               <a
                 href={`data:text/plain;charset=utf-8,${encodeURIComponent(
-                  `KMCLU Degree Certificate\n\nAwarded to: ${r.full_name}\nEnrollment: ${r.enrollment_no}\nRoll: ${r.roll_no}\nCourse: ${r.course_name}\nIssued: ${new Date(r.updated_at).toLocaleDateString()}`,
+                  `KMCLU — ${r.service_name}\n\nIssued to: ${r.full_name}\nEnrollment: ${r.enrollment_no}\nRoll: ${r.roll_no}\nCourse: ${r.course_name}\nIssued: ${new Date(r.updated_at).toLocaleDateString()}`,
                 )}`}
-                download={`KMCLU-Degree-${r.enrollment_no}.txt`}
+                download={`KMCLU-${r.service_code}-${r.enrollment_no}.txt`}
                 className="mt-1 inline-block underline"
               >
-                {t("track.download")}
+                {t("track.download.generic")}
               </a>
             )}
           </div>
@@ -181,11 +202,11 @@ function StatusView({ r }: { r: DegreeRequest }) {
       </div>
 
       <div>
-        <h3 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+        <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {t("track.stages")}
         </h3>
         <ol className="mt-3 space-y-2">
-          {STAGES.map((stage) => {
+          {r.stages.map((stage) => {
             const state = stageState(stage, r);
             return (
               <li
@@ -202,7 +223,7 @@ function StatusView({ r }: { r: DegreeRequest }) {
 
       {r.history.length > 0 && (
         <div>
-          <h3 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+          <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
             {t("track.activity")}
           </h3>
           <ul className="mt-3 space-y-2 text-sm">
@@ -225,7 +246,7 @@ function StatusView({ r }: { r: DegreeRequest }) {
 }
 
 function stageState(stage: string, r: DegreeRequest) {
-  const order = ["hod", "library", "proctor", "finance", "coe"];
+  const order = r.stages as string[];
   const idx = order.indexOf(stage);
   const curIdx = order.indexOf(r.current_stage);
   if (r.status === "approved") return "approved";
@@ -256,7 +277,7 @@ function StatusBadge({ status }: { status: string }) {
     denied: "border-destructive/40 bg-destructive/10 text-destructive",
   };
   return (
-    <span className={`rounded-full border px-3 py-1 text-xs uppercase tracking-wider ${map[status]}`}>
+    <span className={`shrink-0 rounded-full border px-3 py-1 text-xs uppercase tracking-wider ${map[status]}`}>
       {t(`track.status.${status}`)}
     </span>
   );
