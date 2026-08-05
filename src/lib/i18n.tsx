@@ -392,14 +392,11 @@ const DICTS: Record<Lang, Dict> = { en, hi };
 // Map English strings that get stored in data (denial reasons, stored labels)
 // to translation keys so we can display them in either language.
 export const REASON_KEY_BY_EN: Record<string, string> = {};
-[
-  "hod.0","hod.1","hod.2","hod.3",
-  "library.0","library.1","library.2",
-  "proctor.0","proctor.1","proctor.2",
-  "finance.0","finance.1","finance.2",
-  "coe.0","coe.1","coe.2",
-].forEach((k) => {
-  REASON_KEY_BY_EN[en[`reason.${k}`]] = `reason.${k}`;
+(Object.keys(DENIAL_REASONS) as (keyof typeof DENIAL_REASONS)[]).forEach((stage) => {
+  DENIAL_REASONS[stage].forEach((_reason, i) => {
+    const key = `reason.${stage}.${i}`;
+    if (en[key]) REASON_KEY_BY_EN[en[key]] = key;
+  });
 });
 
 type I18nCtx = {
