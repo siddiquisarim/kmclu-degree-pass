@@ -1,14 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useT } from "@/lib/i18n";
-import { STAGES } from "@/lib/store";
+import { SERVICES, resolveStages, type Service } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "KMCLU — Degree Request Portal" },
-      { name: "description", content: "Apply for and track your KMCLU degree certificate through department verification." },
-      { property: "og:title", content: "KMCLU — Degree Request Portal" },
-      { property: "og:description", content: "Apply for and track your KMCLU degree certificate." },
+      { title: "KMCLU — Document & Degree Request Portal" },
+      { name: "description", content: "Apply for degrees, certificates, transcripts, duplicates and corrections at KMCLU and track every verification stage." },
+      { property: "og:title", content: "KMCLU — Document & Degree Request Portal" },
+      { property: "og:description", content: "Apply for degrees, certificates, transcripts and corrections at KMCLU." },
     ],
   }),
   component: Index,
@@ -16,6 +16,11 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const t = useT();
+  const groups: { key: "certificates" | "corrections"; items: Service[] }[] = [
+    { key: "certificates", items: SERVICES.filter((s) => s.group === "certificates") },
+    { key: "corrections", items: SERVICES.filter((s) => s.group === "corrections") },
+  ];
+
   return (
     <div className="min-h-screen text-foreground">
       <header className="border-b border-border/70 bg-background/70 backdrop-blur">
@@ -38,7 +43,7 @@ function Index() {
           <p className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
             {t("brand.examCell")}
           </p>
-          <h2 className="mt-3 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
+          <h2 className="mt-3 font-serif text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
             {t("home.title")}
           </h2>
           <div className="gold-rule mt-5 w-24" />
@@ -56,7 +61,7 @@ function Index() {
             <h3 className="font-serif text-xl font-semibold">{t("home.new.title")}</h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t("home.new.desc")}</p>
             <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-              {t("home.new.title")} <span aria-hidden className="transition group-hover:translate-x-0.5">→</span>
+              {t("common.apply")} <span aria-hidden className="transition group-hover:translate-x-0.5">→</span>
             </span>
           </Link>
           <Link
@@ -75,24 +80,62 @@ function Index() {
         <section className="mt-16">
           <div className="flex items-center gap-3">
             <h3 className="text-xs font-medium uppercase tracking-[0.24em] text-muted-foreground">
-              {t("home.flow.heading")}
+              {t("home.services.heading")}
             </h3>
             <div className="gold-rule flex-1" />
           </div>
-          <ol className="mt-5 grid gap-3 text-sm sm:grid-cols-5">
-            {STAGES.map((s, i) => (
-              <li
-                key={s}
-                className="relative rounded-md border border-border bg-card p-4 shadow-sm transition hover:border-primary/30"
-              >
-                <div className="flex items-baseline gap-2">
-                  <span className="font-serif text-lg font-semibold text-primary">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{t("common.stage")}</span>
-                </div>
-                <div className="mt-1.5 font-medium leading-snug">{t(`stage.${s}`)}</div>
-              </li>
-            ))}
-          </ol>
+          <p className="mt-3 max-w-2xl text-sm text-muted-foreground">{t("home.services.desc")}</p>
+
+          {groups.map((g) => (
+            <div key={g.key} className="mt-8">
+              <h4 className="font-serif text-lg font-semibold">{t(`home.group.${g.key}`)}</h4>
+              <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {g.items.map((s) => {
+                  const feeText = s.fee_per_semester
+                    ? `₹${s.fee_per_semester} ${t("common.perSemester")}`
+                    : s.fee === 0
+                      ? t("common.free")
+                      : `₹${s.fee}`;
+                  const route = resolveStages(s, s.optional_hostel);
+                  return (
+                    <li
+                      key={s.code}
+                      className="flex flex-col rounded-lg border border-border bg-card p-5 shadow-sm transition hover:border-primary/30"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <h5 className="font-medium leading-snug">{t(`service.${s.code}`)}</h5>
+                        <span className="shrink-0 rounded-full border border-border px-2.5 py-0.5 text-xs">
+                          {feeText}
+                        </span>
+                      </div>
+                      <div className="mt-3 text-[10px] uppercase tracking-widest text-muted-foreground">
+                        {t("common.route")}
+                      </div>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        {route.map((st) => t(`stage.${st}`)).join(" → ")}
+                        {s.optional_hostel ? " *" : ""}
+                      </p>
+                      <div className="mt-3 text-[10px] uppercase tracking-widest text-muted-foreground">
+                        {t("common.docsRequired")}
+                      </div>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        {s.documents.length === 0
+                          ? t("common.noDocs")
+                          : s.documents.map((d) => t(`doc.${d}`)).join(", ")}
+                      </p>
+                      <Link
+                        to="/request"
+                        search={{ service: s.code }}
+                        className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary"
+                      >
+                        {t("common.apply")} <span aria-hidden>→</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
         </section>
       </main>
 
