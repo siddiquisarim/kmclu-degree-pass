@@ -300,6 +300,16 @@ const hi: Dict = {
   "staff.uploadHint": "स्वीकृत होने के बाद यह फ़ाइल छात्र को डाउनलोड के लिए उपलब्ध होगी।",
   "staff.hodOf": "विभागाध्यक्ष — {dept}",
 
+  "auth.title": "कर्मचारी साइन इन",
+  "auth.desc": "प्रशासन द्वारा आपको दिए गए ईमेल और पासवर्ड का उपयोग करें।",
+  "auth.email": "ईमेल",
+  "auth.password": "पासवर्ड",
+  "auth.signIn": "साइन इन करें",
+  "auth.signOut": "साइन आउट",
+  "auth.adminPanel": "एडमिन पैनल",
+  "auth.signedInAs": "{name} के रूप में साइन इन",
+
+
   "stage.hod": "विभागाध्यक्ष",
   "stage.library": "पुस्तकालय",
   "stage.proctor": "प्रॉक्टर कार्यालय",
