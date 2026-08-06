@@ -96,6 +96,17 @@ const en: Dict = {
   "staff.uploadHint": "This file will be available to the student for download once approved.",
   "staff.hodOf": "HOD — {dept}",
 
+  // staff / admin login
+  "auth.title": "Staff sign in",
+  "auth.desc": "Use the email and password issued to you by the administration.",
+  "auth.email": "Email",
+  "auth.password": "Password",
+  "auth.signIn": "Sign in",
+  "auth.signOut": "Sign out",
+  "auth.adminPanel": "Admin panel",
+  "auth.signedInAs": "Signed in as {name}",
+
+
   // stage labels
   "stage.hod": "Head of Department",
   "stage.library": "Library",
