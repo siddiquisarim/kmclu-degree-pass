@@ -96,6 +96,17 @@ const en: Dict = {
   "staff.uploadHint": "This file will be available to the student for download once approved.",
   "staff.hodOf": "HOD — {dept}",
 
+  // staff / admin login
+  "auth.title": "Staff sign in",
+  "auth.desc": "Use the email and password issued to you by the administration.",
+  "auth.email": "Email",
+  "auth.password": "Password",
+  "auth.signIn": "Sign in",
+  "auth.signOut": "Sign out",
+  "auth.adminPanel": "Admin panel",
+  "auth.signedInAs": "Signed in as {name}",
+
+
   // stage labels
   "stage.hod": "Head of Department",
   "stage.library": "Library",
@@ -288,6 +299,16 @@ const hi: Dict = {
   "staff.uploadLabel": "डिग्री प्रमाणपत्र (पीडीएफ या छवि)",
   "staff.uploadHint": "स्वीकृत होने के बाद यह फ़ाइल छात्र को डाउनलोड के लिए उपलब्ध होगी।",
   "staff.hodOf": "विभागाध्यक्ष — {dept}",
+
+  "auth.title": "कर्मचारी साइन इन",
+  "auth.desc": "प्रशासन द्वारा आपको दिए गए ईमेल और पासवर्ड का उपयोग करें।",
+  "auth.email": "ईमेल",
+  "auth.password": "पासवर्ड",
+  "auth.signIn": "साइन इन करें",
+  "auth.signOut": "साइन आउट",
+  "auth.adminPanel": "एडमिन पैनल",
+  "auth.signedInAs": "{name} के रूप में साइन इन",
+
 
   "stage.hod": "विभागाध्यक्ष",
   "stage.library": "पुस्तकालय",

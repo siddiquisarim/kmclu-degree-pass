@@ -1,27 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import {
-  STAGES,
-  DEPARTMENTS,
   DENIAL_REASONS,
   listByStage,
   listForHod,
   actOn,
   type Stage,
-  type DepartmentCode,
   type DegreeRequest,
 } from "@/lib/store";
-import { useT, tReason } from "@/lib/i18n";
+import { currentUser, login, logout, type StaffUser } from "@/lib/auth";
+import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-
-const ROLE_KEY = "kmclu_staff_role";
-const DEPT_KEY = "kmclu_staff_dept";
 
 export const Route = createFileRoute("/staff")({
   head: () => ({
     meta: [
-      { title: "Staff — KMCLU" },
-      { name: "description", content: "Departmental verification dashboard." },
+      { title: "Staff sign in — KMCLU Document Portal" },
+      { name: "description", content: "Departmental verification dashboard for KMCLU staff." },
+      { property: "og:title", content: "Staff sign in — KMCLU Document Portal" },
+      { property: "og:description", content: "Departmental verification dashboard for KMCLU staff." },
     ],
   }),
   component: StaffPage,
@@ -29,30 +26,28 @@ export const Route = createFileRoute("/staff")({
 
 function StaffPage() {
   const t = useT();
-  const [role, setRole] = useState<Stage | null>(null);
-  const [dept, setDept] = useState<DepartmentCode | null>(null);
+  const [user, setUser] = useState<StaffUser | null>(null);
+  const [ready, setReady] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [pending, setPending] = useState<DegreeRequest[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [reason, setReason] = useState<string>("");
   const [certFile, setCertFile] = useState<{ name: string; data_url: string } | null>(null);
 
   useEffect(() => {
-    const savedRole = localStorage.getItem(ROLE_KEY) as Stage | null;
-    const savedDept = localStorage.getItem(DEPT_KEY) as DepartmentCode | null;
-    if (savedRole && STAGES.includes(savedRole)) setRole(savedRole);
-    if (savedDept) setDept(savedDept);
+    setUser(currentUser());
+    setReady(true);
   }, []);
 
-  const needsDept = role === "hod";
+  const role = user && user.role !== "admin" ? (user.role as Stage) : null;
+  const dept = user?.department ?? null;
 
   const refresh = useCallback(() => {
-    if (!role) return;
-    if (role === "hod") {
-      if (dept) setPending(listForHod(dept));
-      else setPending([]);
-    } else {
-      setPending(listByStage(role));
-    }
+    if (!role) return setPending([]);
+    if (role === "hod") setPending(dept ? listForHod(dept) : []);
+    else setPending(listByStage(role));
   }, [role, dept]);
 
   useEffect(() => {
@@ -61,25 +56,22 @@ function StaffPage() {
     return () => window.removeEventListener("kmclu:changed", refresh);
   }, [refresh]);
 
-  function pickRole(r: Stage) {
-    localStorage.setItem(ROLE_KEY, r);
-    setRole(r);
-    if (r !== "hod") {
-      localStorage.removeItem(DEPT_KEY);
-      setDept(null);
+  function onSignIn(e: React.FormEvent) {
+    e.preventDefault();
+    const res = login(email, password);
+    if (!res.ok) {
+      setError(res.error);
+      return;
     }
+    setError("");
+    setPassword("");
+    setUser(res.user);
   }
 
-  function pickDept(d: DepartmentCode) {
-    localStorage.setItem(DEPT_KEY, d);
-    setDept(d);
-  }
-
-  function switchRole() {
-    localStorage.removeItem(ROLE_KEY);
-    localStorage.removeItem(DEPT_KEY);
-    setRole(null);
-    setDept(null);
+  function onSignOut() {
+    logout();
+    setUser(null);
+    setPending([]);
   }
 
   function act(id: string, action: "approve" | "deny") {
@@ -121,11 +113,13 @@ function StaffPage() {
     reader.readAsDataURL(file);
   }
 
-  const headerTitle = role
-    ? role === "hod" && dept
-      ? t("staff.hodOf", { dept: t(`dept.${dept}`) })
-      : t(`stage.${role}`)
-    : t("staff.selectDept");
+  const headerTitle = !user
+    ? t("auth.title")
+    : user.role === "admin"
+      ? t("auth.adminPanel")
+      : role === "hod" && dept
+        ? t("staff.hodOf", { dept: t(`dept.${dept}`) })
+        : t(`stage.${user.role}`);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -137,9 +131,14 @@ function StaffPage() {
           </div>
           <div className="flex items-center gap-4 text-sm">
             <Link to="/" className="text-muted-foreground hover:text-foreground">{t("nav.home")}</Link>
-            {role && (
-              <button onClick={switchRole} className="text-muted-foreground hover:text-foreground">
-                {t("staff.switchRole")}
+            {user?.role === "admin" && (
+              <Link to="/admin" className="text-muted-foreground hover:text-foreground">
+                {t("auth.adminPanel")}
+              </Link>
+            )}
+            {user && (
+              <button onClick={onSignOut} className="text-muted-foreground hover:text-foreground">
+                {t("auth.signOut")}
               </button>
             )}
           </div>
@@ -147,49 +146,59 @@ function StaffPage() {
       </header>
 
       <main className="mx-auto max-w-5xl px-6 py-10">
-        {!role && (
-          <section>
-            <h2 className="text-lg font-medium">{t("staff.pickDept.title")}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{t("staff.pickDept.desc")}</p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-              {STAGES.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => pickRole(s)}
-                  className="rounded-md border border-border p-4 text-left transition hover:border-foreground/40 hover:bg-accent"
-                >
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                    {t("common.stage")} {STAGES.indexOf(s) + 1}
-                  </div>
-                  <div className="mt-1 font-medium">{t(`stage.${s}`)}</div>
-                </button>
-              ))}
-            </div>
+        {ready && !user && (
+          <section className="mx-auto max-w-sm rounded-md border border-border p-6">
+            <h2 className="font-serif text-lg font-semibold">{t("auth.title")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t("auth.desc")}</p>
+            <form onSubmit={onSignIn} className="mt-5 grid gap-3">
+              <div className="grid gap-1.5">
+                <label className="text-xs uppercase tracking-wider text-muted-foreground">
+                  {t("auth.email")}
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="username"
+                  className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <label className="text-xs uppercase tracking-wider text-muted-foreground">
+                  {t("auth.password")}
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                />
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <Button type="submit">{t("auth.signIn")}</Button>
+            </form>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Demo accounts — admin@kmclu.ac.in / admin123, coe@kmclu.ac.in / staff123,
+              hod.cse@kmclu.ac.in / hod123
+            </p>
           </section>
         )}
 
-        {role && needsDept && !dept && (
-          <section>
-            <h2 className="text-lg font-medium">{t("staff.pickHodDept.title")}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{t("staff.pickHodDept.desc")}</p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-              {DEPARTMENTS.map((d) => (
-                <button
-                  key={d.code}
-                  onClick={() => pickDept(d.code)}
-                  className="rounded-md border border-border p-4 text-left transition hover:border-foreground/40 hover:bg-accent"
-                >
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                    {d.code.toUpperCase()}
-                  </div>
-                  <div className="mt-1 font-medium">{t(`dept.${d.code}`)}</div>
-                </button>
-              ))}
-            </div>
+        {user?.role === "admin" && (
+          <section className="rounded-md border border-border p-6">
+            <h2 className="font-serif text-lg font-semibold">{t("auth.adminPanel")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              You are signed in as an administrator. Open the admin panel to manage accounts and
+              every request.
+            </p>
+            <Link to="/admin" className="mt-4 inline-block">
+              <Button>{t("auth.adminPanel")}</Button>
+            </Link>
           </section>
         )}
 
-        {role && (!needsDept || dept) && (
+        {role && (
           <section>
             <div className="flex items-baseline justify-between">
               <h2 className="text-lg font-medium">{t("staff.pending")}</h2>
@@ -270,8 +279,7 @@ function StaffPage() {
                     </Button>
                   </div>
 
-
-                  {activeId === r.id && role && (
+                  {activeId === r.id && (
                     <div className="mt-4 grid gap-3 border-t border-border pt-4">
                       <div className="grid gap-1.5">
                         <label className="text-xs uppercase tracking-wider text-muted-foreground">
