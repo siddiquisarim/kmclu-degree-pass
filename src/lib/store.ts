@@ -666,6 +666,94 @@ export function actOn(
   return { ok: true as const, request: req };
 }
 
+// ---------------------------------------------------------------------------
+// Admin overrides — full control over any request, at any stage.
+// ---------------------------------------------------------------------------
+
+export type AdminPatch = Partial<
+  Pick<
+    DegreeRequest,
+    | "full_name"
+    | "enrollment_no"
+    | "roll_no"
+    | "dob"
+    | "email"
+    | "phone"
+    | "fee"
+    | "status"
+    | "current_stage"
+    | "denied_stage"
+    | "denial_reason"
+    | "certificate_name"
+    | "certificate_data_url"
+    | "download_url"
+  >
+>;
+
+export function adminUpdateRequest(id: string, patch: AdminPatch) {
+  const list = read();
+  const req = list.find((r) => r.id === id);
+  if (!req) return { ok: false as const, error: "Request not found" };
+  Object.assign(req, patch);
+  if (req.status === "approved") {
+    req.current_stage = "done";
+    req.denied_stage = null;
+    req.denial_reason = null;
+    if (!req.download_url) req.download_url = `/document/${req.id}`;
+  }
+  if (req.status === "pending") {
+    req.denied_stage = null;
+    req.denial_reason = null;
+    if (req.current_stage === "done") req.current_stage = req.stages[req.stages.length - 1]!;
+  }
+  if (req.status === "denied" && !req.denied_stage) {
+    req.denied_stage = req.current_stage === "done" ? req.stages[req.stages.length - 1]! : req.current_stage;
+  }
+  req.updated_at = new Date().toISOString();
+  write(list);
+  return { ok: true as const, request: req };
+}
+
+// Force a request to a specific stage (admin only), logging the override.
+export function adminSetStage(id: string, stage: Stage | "done") {
+  const list = read();
+  const req = list.find((r) => r.id === id);
+  if (!req) return { ok: false as const, error: "Request not found" };
+  req.current_stage = stage;
+  req.status = stage === "done" ? "approved" : "pending";
+  req.denied_stage = null;
+  req.denial_reason = null;
+  if (stage === "done" && !req.download_url) req.download_url = `/document/${req.id}`;
+  req.updated_at = new Date().toISOString();
+  write(list);
+  return { ok: true as const, request: req };
+}
+
+export function deleteRequest(id: string) {
+  const list = read();
+  const next = list.filter((r) => r.id !== id);
+  if (next.length === list.length) return { ok: false as const, error: "Request not found" };
+  write(next);
+  return { ok: true as const };
+}
+
+export function stats() {
+  const list = read();
+  return {
+    total: list.length,
+    pending: list.filter((r) => r.status === "pending").length,
+    approved: list.filter((r) => r.status === "approved").length,
+    denied: list.filter((r) => r.status === "denied").length,
+    fees: list.reduce((sum, r) => sum + (r.fee || 0), 0),
+    by_stage: Object.fromEntries(
+      STAGES.map((s) => [
+        s,
+        list.filter((r) => r.status === "pending" && r.current_stage === s).length,
+      ]),
+    ) as Record<Stage, number>,
+  };
+}
+
 export function resetAll() {
   if (typeof window !== "undefined") {
     localStorage.removeItem(KEY);
@@ -673,3 +761,4 @@ export function resetAll() {
     window.dispatchEvent(new Event("kmclu:changed"));
   }
 }
+
