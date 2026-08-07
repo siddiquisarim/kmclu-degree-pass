@@ -9,6 +9,7 @@ import {
   type DegreeRequest,
 } from "@/lib/store";
 import { currentUser, login, logout, type StaffUser } from "@/lib/auth";
+import { CERT_FIELDS, generateCertificate, hasTemplate, type CertField, type CertValues } from "@/lib/certificates";
 import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 
@@ -35,6 +36,8 @@ function StaffPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [reason, setReason] = useState<string>("");
   const [certFile, setCertFile] = useState<{ name: string; data_url: string } | null>(null);
+  const [certValues, setCertValues] = useState<CertValues>({});
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     setUser(currentUser());
@@ -74,31 +77,43 @@ function StaffPage() {
     setPending([]);
   }
 
-  function act(id: string, action: "approve" | "deny") {
+  async function act(id: string, action: "approve" | "deny") {
     if (!role) return;
     if (action === "deny" && !reason) {
       alert(t("staff.err.pickReason"));
       return;
     }
-    if (action === "approve" && role === "coe" && !certFile) {
-      alert(t("staff.err.uploadCert"));
-      return;
+    const target = pending.find((r) => r.id === id);
+    let extras: { certificate_name: string; certificate_data_url: string } | undefined;
+
+    if (action === "approve" && role === "coe" && target) {
+      if (certFile) {
+        extras = { certificate_name: certFile.name, certificate_data_url: certFile.data_url };
+      } else if (hasTemplate(target.service_code)) {
+        try {
+          setBusy(true);
+          const gen = await generateCertificate(target, certValues);
+          extras = { certificate_name: gen.name, certificate_data_url: gen.data_url };
+        } catch {
+          alert(t("staff.err.generate"));
+          return;
+        } finally {
+          setBusy(false);
+        }
+      } else {
+        alert(t("staff.err.uploadCert"));
+        return;
+      }
     }
-    const res = actOn(
-      id,
-      role,
-      action,
-      action === "deny" ? reason : undefined,
-      action === "approve" && role === "coe" && certFile
-        ? { certificate_name: certFile.name, certificate_data_url: certFile.data_url }
-        : undefined,
-    );
+
+    const res = actOn(id, role, action, action === "deny" ? reason : undefined, extras);
     if (!res.ok) {
       alert(res.error);
       return;
     }
     setReason("");
     setCertFile(null);
+    setCertValues({});
     setActiveId(null);
     refresh();
   }
@@ -273,6 +288,7 @@ function StaffPage() {
                         setActiveId(activeId === r.id ? null : r.id);
                         setReason("");
                         setCertFile(null);
+                        setCertValues({});
                       }}
                     >
                       {activeId === r.id ? t("common.cancel") : t("common.review")}
@@ -298,6 +314,35 @@ function StaffPage() {
                           ))}
                         </select>
                       </div>
+                      {role === "coe" && hasTemplate(r.service_code) && (
+                        <div className="grid gap-3 rounded-md border border-border bg-accent/40 p-4">
+                          <div>
+                            <div className="text-xs font-medium uppercase tracking-wider">
+                              {t("staff.cert.title")}
+                            </div>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {t("staff.cert.hint")}
+                            </p>
+                          </div>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            {(CERT_FIELDS[r.service_code] ?? []).map((field: CertField) => (
+                              <div key={field} className="grid gap-1.5">
+                                <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                                  {t(`staff.cert.${field}`)}
+                                </label>
+                                <input
+                                  type={field === "issue_date" ? "date" : "text"}
+                                  value={certValues[field] ?? ""}
+                                  onChange={(e) =>
+                                    setCertValues({ ...certValues, [field]: e.target.value })
+                                  }
+                                  className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       {role === "coe" && (
                         <div className="grid gap-1.5">
                           <label className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -316,8 +361,12 @@ function StaffPage() {
                         </div>
                       )}
                       <div className="flex gap-2">
-                        <Button onClick={() => act(r.id, "approve")}>{t("common.approve")}</Button>
-                        <Button variant="destructive" onClick={() => act(r.id, "deny")}>
+                        <Button disabled={busy} onClick={() => void act(r.id, "approve")}>
+                          {role === "coe" && hasTemplate(r.service_code) && !certFile
+                            ? t("staff.cert.generate")
+                            : t("common.approve")}
+                        </Button>
+                        <Button variant="destructive" onClick={() => void act(r.id, "deny")}>
                           {t("common.deny")}
                         </Button>
                       </div>
