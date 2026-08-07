@@ -359,8 +359,8 @@ async function awardCertificate(
           { text: "of" },
           { text: r.course_name, bold: true, italic: true },
           { text: "in the Examination of" },
-          { text: v.academic_year || String(new Date().getFullYear()) },
-          { text: ", and that he/she is placed in the" },
+          { text: `${v.academic_year || String(new Date().getFullYear())},` },
+          { text: "and that he/she is placed in the" },
           { text: `${v.division || "First Division"}.`, bold: true, italic: true },
         ];
   drawRuns(page, runs, { x: left, y, width, size: 13, leading: 30, indent: 24 }, f);
@@ -447,10 +447,10 @@ async function letterCertificate(
         ]
       : [
           { text: "This is to certify that" },
-          { text: r.full_name, bold: true },
-          { text: ", Son/Daughter of" },
-          { text: v.father_name || "—", bold: true },
-          { text: ", bearing Roll No." },
+          { text: `${r.full_name},`, bold: true },
+          { text: "Son/Daughter of" },
+          { text: `${v.father_name || "—"},`, bold: true },
+          { text: "bearing Roll No." },
           { text: `${r.roll_no},` },
           { text: "has completed the" },
           { text: r.course_name, bold: true },
