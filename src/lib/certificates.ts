@@ -96,7 +96,7 @@ function drawRuns(
   let y = opts.y;
   let x = opts.x + (opts.indent ?? 0);
   const right = opts.x + opts.width;
-  const space = textWidth(f.reg, " ", opts.size);
+  const space = textWidth(f.reg, " ", opts.size) + opts.size * 0.14;
 
   for (const w of words) {
     const font = pick(w);
