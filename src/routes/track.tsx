@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import { z } from "zod";
-import { listByCredentials, type DegreeRequest } from "@/lib/store";
+import { listByCredentials, markPaid, PAYMENT_GATEWAY_URL, type DegreeRequest } from "@/lib/store";
 import { useT, tReason } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -172,6 +172,30 @@ function StatusView({ r }: { r: DegreeRequest }) {
             <p className="mt-2 text-xs text-muted-foreground">
               {t("track.visitOffice", { stage: deniedStageLabel })}
             </p>
+          </div>
+        )}
+
+        {r.status === "pending" && r.current_stage === "payment" && (
+          <div className="mt-4 rounded-md border border-[var(--gold)]/50 bg-accent p-4 text-sm">
+            <div className="font-medium">{t("track.pay.title")}</div>
+            <p className="mt-1 text-muted-foreground">{t("track.pay.desc")}</p>
+            <div className="mt-2 font-serif text-lg font-semibold">
+              {r.fee === 0 ? t("common.free") : `₹${r.fee}`}
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <a
+                href={PAYMENT_GATEWAY_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+              >
+                {t("track.pay.button")} <span aria-hidden>→</span>
+              </a>
+              <Button variant="outline" size="sm" onClick={() => markPaid(r.id)}>
+                {t("track.pay.mark")}
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">{t("track.pay.note")}</p>
           </div>
         )}
 
