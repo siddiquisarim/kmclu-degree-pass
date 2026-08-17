@@ -106,7 +106,7 @@ export const SERVICES: Service[] = [
     group: "certificates",
     fee: 0,
     stages: FULL_FLOW,
-    documents: [],
+    documents: ["passport_photo", "final_sem_marksheet"],
   },
   {
     code: "transfer_certificate",
@@ -115,16 +115,16 @@ export const SERVICES: Service[] = [
     fee: 500,
     stages: ["hod", "library", "proctor", "finance", "coe"],
     optional_hostel: true,
-    documents: ["application"],
+    documents: ["passport_photo", "final_sem_marksheet", "application"],
   },
   {
     code: "character_certificate",
     name: "Character Certificate",
     group: "certificates",
-    fee: 500,
+    fee: 0,
     stages: ["hod", "library", "proctor", "finance", "coe"],
     optional_hostel: true,
-    documents: ["application"],
+    documents: ["passport_photo", "final_sem_marksheet", "application"],
   },
   {
     code: "transcript",
@@ -132,7 +132,7 @@ export const SERVICES: Service[] = [
     group: "certificates",
     fee: 2000,
     stages: ["coe"],
-    documents: ["marksheets_all"],
+    documents: ["passport_photo", "marksheets_all"],
   },
   {
     code: "bonafide",
@@ -140,7 +140,7 @@ export const SERVICES: Service[] = [
     group: "certificates",
     fee: 0,
     stages: ["coe"],
-    documents: [],
+    documents: ["passport_photo", "fee_receipt"],
   },
   {
     code: "provisional_degree",
@@ -148,7 +148,7 @@ export const SERVICES: Service[] = [
     group: "certificates",
     fee: 300,
     stages: ["coe"],
-    documents: ["final_sem_marksheet"],
+    documents: ["passport_photo", "final_sem_marksheet"],
   },
   {
     code: "diploma_certificate",
@@ -156,7 +156,7 @@ export const SERVICES: Service[] = [
     group: "certificates",
     fee: 0,
     stages: ["coe"],
-    documents: ["final_sem_marksheet"],
+    documents: ["passport_photo", "final_sem_marksheet"],
   },
   {
     code: "medium_certificate",
@@ -164,7 +164,7 @@ export const SERVICES: Service[] = [
     group: "certificates",
     fee: 0,
     stages: ["coe"],
-    documents: ["final_sem_marksheet"],
+    documents: ["passport_photo", "final_sem_marksheet"],
   },
   {
     code: "marksheet_correction",
@@ -173,7 +173,12 @@ export const SERVICES: Service[] = [
     fee: 0,
     fee_per_semester: 300,
     stages: ["coe"],
-    documents: ["highschool_marksheet", "intermediate_marksheet", "marksheet_to_correct"],
+    documents: [
+      "passport_photo",
+      "highschool_marksheet",
+      "intermediate_marksheet",
+      "marksheet_to_correct",
+    ],
   },
   {
     code: "degree_correction",
@@ -181,7 +186,7 @@ export const SERVICES: Service[] = [
     group: "corrections",
     fee: 0,
     stages: ["coe"],
-    documents: ["degree_copy", "highschool_marksheet", "intermediate_marksheet"],
+    documents: ["passport_photo", "degree_copy", "highschool_marksheet", "intermediate_marksheet"],
   },
   {
     code: "duplicate_marksheet",
@@ -189,7 +194,7 @@ export const SERVICES: Service[] = [
     group: "corrections",
     fee: 1000,
     stages: ["coe"],
-    documents: ["application"],
+    documents: ["passport_photo", "application"],
   },
   {
     code: "duplicate_degree",
@@ -197,7 +202,7 @@ export const SERVICES: Service[] = [
     group: "corrections",
     fee: 1200,
     stages: ["coe"],
-    documents: ["fir_copy", "affidavit", "application"],
+    documents: ["passport_photo", "fir_copy", "affidavit", "application"],
   },
 ];
 
