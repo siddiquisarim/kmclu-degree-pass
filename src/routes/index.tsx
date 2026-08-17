@@ -119,16 +119,14 @@ function Index() {
                       : `₹${s.fee}`;
                   const route = resolveStages(s, s.optional_hostel);
                   return (
-                    <li
-                      key={s.code}
-                      className="flex flex-col rounded-lg border border-border bg-card p-5 shadow-sm transition hover:border-primary/30"
-                    >
+                    <li key={s.code} className="card-paper flex flex-col p-5">
                       <div className="flex items-start justify-between gap-3">
-                        <h5 className="font-medium leading-snug">{t(`service.${s.code}`)}</h5>
-                        <span className="shrink-0 rounded-full border border-border px-2.5 py-0.5 text-xs">
-                          {feeText}
-                        </span>
+                        <h5 className="font-serif text-base font-semibold leading-snug">
+                          {t(`service.${s.code}`)}
+                        </h5>
+                        <span className="badge-gold shrink-0">{feeText}</span>
                       </div>
+                      <div className="gold-rule mt-3 w-full opacity-70" />
                       <div className="mt-3 text-[10px] uppercase tracking-widest text-muted-foreground">
                         {t("common.route")}
                       </div>
@@ -152,6 +150,7 @@ function Index() {
                         {t("common.apply")} <span aria-hidden>→</span>
                       </Link>
                     </li>
+
                   );
                 })}
               </ul>
