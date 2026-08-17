@@ -199,6 +199,8 @@ const en: Dict = {
   "service.duplicate_marksheet": "Duplicate Marksheet",
   "service.duplicate_degree": "Duplicate Degree",
 
+  "doc.passport_photo": "Passport size photograph",
+  "doc.fee_receipt": "Latest fee receipt",
   "doc.marksheets_all": "All semester marksheets",
   "doc.final_sem_marksheet": "Final semester marksheet",
   "doc.highschool_marksheet": "High school marksheet",
