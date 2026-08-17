@@ -130,18 +130,25 @@ function RequestPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border">
+    <div className="min-h-screen text-foreground">
+      <header className="border-b border-border/70 bg-background/70 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-5">
-          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">{t("nav.back")}</Link>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">{t("brand.kmclu")}</p>
+          <Link to="/" className="text-sm text-muted-foreground transition hover:text-foreground">
+            {t("nav.back")}
+          </Link>
+          <p className="flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+            <span className="crest !h-6 !w-6 !text-[0.65rem]">K</span>
+            {t("brand.kmclu")}
+          </p>
         </div>
       </header>
-      <main className="mx-auto max-w-xl px-6 py-12">
-        <h1 className="font-serif text-2xl font-semibold">{t("request.title")}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{t("request.intro")}</p>
+      <main className="mx-auto max-w-2xl px-6 py-12">
+        <h1 className="font-serif text-3xl font-semibold">{t("request.title")}</h1>
+        <div className="gold-rule mt-4 w-20" />
+        <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{t("request.intro")}</p>
 
-        <form onSubmit={onSubmit} className="mt-8 grid gap-4">
+        <form onSubmit={onSubmit} className="card-paper mt-8 grid gap-4 p-6 sm:p-7">
+
           <div className="grid gap-1.5">
             <Label htmlFor="service">{t("request.field.service")}</Label>
             <select

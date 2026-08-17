@@ -199,6 +199,8 @@ const en: Dict = {
   "service.duplicate_marksheet": "Duplicate Marksheet",
   "service.duplicate_degree": "Duplicate Degree",
 
+  "doc.passport_photo": "Passport size photograph",
+  "doc.fee_receipt": "Latest fee receipt",
   "doc.marksheets_all": "All semester marksheets",
   "doc.final_sem_marksheet": "Final semester marksheet",
   "doc.highschool_marksheet": "High school marksheet",
@@ -408,6 +410,8 @@ const hi: Dict = {
   "service.duplicate_marksheet": "द्वितीय प्रति अंकपत्र",
   "service.duplicate_degree": "द्वितीय प्रति डिग्री",
 
+  "doc.passport_photo": "पासपोर्ट साइज़ फोटो",
+  "doc.fee_receipt": "नवीनतम शुल्क रसीद",
   "doc.marksheets_all": "सभी सेमेस्टर के अंकपत्र",
   "doc.final_sem_marksheet": "अंतिम सेमेस्टर का अंकपत्र",
   "doc.highschool_marksheet": "हाईस्कूल अंकपत्र",

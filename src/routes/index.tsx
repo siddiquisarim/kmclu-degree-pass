@@ -38,44 +38,63 @@ function Index() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-16">
-        <div className="max-w-3xl">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+      <main className="mx-auto max-w-5xl px-6 py-12 sm:py-16">
+        <section className="panel-navy px-7 py-12 sm:px-12 sm:py-16">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-primary-foreground/70">
             {t("brand.examCell")}
           </p>
-          <h2 className="mt-3 font-serif text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
+          <h2 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
             {t("home.title")}
           </h2>
-          <div className="gold-rule mt-5 w-24" />
-          <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground">
+          <div className="gold-rule mt-6 w-28" />
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-primary-foreground/80">
             {t("home.intro")}
           </p>
-        </div>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              to="/request"
+              className="inline-flex items-center gap-2 rounded-md bg-background px-5 py-2.5 text-sm font-medium text-foreground shadow-sm transition hover:opacity-90"
+            >
+              {t("common.apply")} <span aria-hidden>→</span>
+            </Link>
+            <Link
+              to="/track"
+              className="inline-flex items-center gap-2 rounded-md border border-primary-foreground/30 px-5 py-2.5 text-sm font-medium transition hover:border-primary-foreground/60"
+            >
+              {t("home.track.title")}
+            </Link>
+          </div>
+          <div className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs uppercase tracking-[0.18em] text-primary-foreground/70">
+            {(["hod", "library", "proctor", "finance", "coe"] as const).map((st, i) => (
+              <span key={st} className="flex items-center gap-3">
+                {i > 0 && <span aria-hidden className="text-primary-foreground/40">→</span>}
+                <span>{t(`stage.${st}`)}</span>
+              </span>
+            ))}
+          </div>
+        </section>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2">
-          <Link
-            to="/request"
-            className="group relative block overflow-hidden rounded-lg border border-border bg-card p-7 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-          >
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-60" />
-            <h3 className="font-serif text-xl font-semibold">{t("home.new.title")}</h3>
+        <div className="mt-10 grid gap-5 sm:grid-cols-2">
+          <Link to="/request" className="card-paper group block p-7">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-70" />
+            <span className="step-dot">1</span>
+            <h3 className="mt-4 font-serif text-xl font-semibold">{t("home.new.title")}</h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t("home.new.desc")}</p>
             <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
               {t("common.apply")} <span aria-hidden className="transition group-hover:translate-x-0.5">→</span>
             </span>
           </Link>
-          <Link
-            to="/track"
-            className="group relative block overflow-hidden rounded-lg border border-border bg-card p-7 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-          >
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-60" />
-            <h3 className="font-serif text-xl font-semibold">{t("home.track.title")}</h3>
+          <Link to="/track" className="card-paper group block p-7">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-70" />
+            <span className="step-dot">2</span>
+            <h3 className="mt-4 font-serif text-xl font-semibold">{t("home.track.title")}</h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t("home.track.desc")}</p>
             <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
               {t("home.track.title")} <span aria-hidden className="transition group-hover:translate-x-0.5">→</span>
             </span>
           </Link>
         </div>
+
 
         <section className="mt-16">
           <div className="flex items-center gap-3">
@@ -100,16 +119,14 @@ function Index() {
                       : `₹${s.fee}`;
                   const route = resolveStages(s, s.optional_hostel);
                   return (
-                    <li
-                      key={s.code}
-                      className="flex flex-col rounded-lg border border-border bg-card p-5 shadow-sm transition hover:border-primary/30"
-                    >
+                    <li key={s.code} className="card-paper flex flex-col p-5">
                       <div className="flex items-start justify-between gap-3">
-                        <h5 className="font-medium leading-snug">{t(`service.${s.code}`)}</h5>
-                        <span className="shrink-0 rounded-full border border-border px-2.5 py-0.5 text-xs">
-                          {feeText}
-                        </span>
+                        <h5 className="font-serif text-base font-semibold leading-snug">
+                          {t(`service.${s.code}`)}
+                        </h5>
+                        <span className="badge-gold shrink-0">{feeText}</span>
                       </div>
+                      <div className="gold-rule mt-3 w-full opacity-70" />
                       <div className="mt-3 text-[10px] uppercase tracking-widest text-muted-foreground">
                         {t("common.route")}
                       </div>
@@ -133,6 +150,7 @@ function Index() {
                         {t("common.apply")} <span aria-hidden>→</span>
                       </Link>
                     </li>
+
                   );
                 })}
               </ul>
