@@ -56,12 +56,14 @@ export function courseByCode(code: string) {
 // ---------------------------------------------------------------------------
 
 export const DOC_TYPES = [
+  "passport_photo",
   "marksheets_all",
   "final_sem_marksheet",
   "highschool_marksheet",
   "intermediate_marksheet",
   "marksheet_to_correct",
   "degree_copy",
+  "fee_receipt",
   "fir_copy",
   "affidavit",
   "application",
