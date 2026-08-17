@@ -65,7 +65,7 @@ function Index() {
             </Link>
           </div>
           <div className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs uppercase tracking-[0.18em] text-primary-foreground/70">
-            {(["hod", "library", "proctor", "finance", "coe"] as const).map((st, i) => (
+            {(["hod", "library", "proctor", "payment", "finance", "coe"] as const).map((st, i) => (
               <span key={st} className="flex items-center gap-3">
                 {i > 0 && <span aria-hidden className="text-primary-foreground/40">→</span>}
                 <span>{t(`stage.${st}`)}</span>

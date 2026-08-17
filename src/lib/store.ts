@@ -4,7 +4,7 @@
 // REST calls (e.g. GET /api/requests, POST /api/requests, POST
 // /api/requests/{id}/actions) without changing components.
 
-export const STAGES = ["hod", "library", "proctor", "finance", "hostel", "coe"] as const;
+export const STAGES = ["hod", "library", "proctor", "payment", "finance", "hostel", "coe"] as const;
 export type Stage = (typeof STAGES)[number];
 export type Status = "pending" | "approved" | "denied";
 
@@ -12,6 +12,7 @@ export const STAGE_LABEL: Record<string, string> = {
   hod: "Head of Department",
   library: "Library",
   proctor: "Proctor Office",
+  payment: "Fee Payment",
   finance: "Finance",
   hostel: "Hostel",
   coe: "Controller of Examination",
@@ -97,7 +98,7 @@ export type Service = {
   documents: DocType[];      // documents the student must attach
 };
 
-const FULL_FLOW: Stage[] = ["hod", "library", "proctor", "finance", "coe"];
+const FULL_FLOW: Stage[] = ["hod", "library", "proctor", "payment", "finance", "coe"];
 
 export const SERVICES: Service[] = [
   {
@@ -113,7 +114,7 @@ export const SERVICES: Service[] = [
     name: "Transfer Certificate (Migration)",
     group: "certificates",
     fee: 500,
-    stages: ["hod", "library", "proctor", "finance", "coe"],
+    stages: ["hod", "library", "proctor", "payment", "finance", "coe"],
     optional_hostel: true,
     documents: ["passport_photo", "final_sem_marksheet", "application"],
   },
@@ -122,7 +123,7 @@ export const SERVICES: Service[] = [
     name: "Character Certificate",
     group: "certificates",
     fee: 0,
-    stages: ["hod", "library", "proctor", "finance", "coe"],
+    stages: ["hod", "library", "proctor", "payment", "finance", "coe"],
     optional_hostel: true,
     documents: ["passport_photo", "final_sem_marksheet", "application"],
   },
@@ -241,6 +242,10 @@ export const DENIAL_REASONS: Record<Stage, string[]> = {
     "Disciplinary case pending",
     "Hostel no-dues not cleared",
     "Identity card not surrendered",
+  ],
+  payment: [
+    "Online payment failed or reversed",
+    "Payment reference could not be verified",
   ],
   finance: [
     "Tuition fee balance pending",
@@ -668,6 +673,29 @@ export function actOn(
       }
     }
   }
+  req.updated_at = now;
+  write(list);
+  return { ok: true as const, request: req };
+}
+
+// Student-side payment step. Replace PAYMENT_GATEWAY_URL with the real
+// gateway checkout URL (or POST to the Laravel endpoint that creates an
+// order) once the merchant account is live.
+export const PAYMENT_GATEWAY_URL = "https://example-payment-gateway.test/checkout";
+
+export function markPaid(id: string, reference?: string) {
+  const list = read();
+  const req = list.find((r) => r.id === id);
+  if (!req) return { ok: false as const, error: "Request not found" };
+  if (req.current_stage !== "payment") return { ok: false as const, error: "Payment not due" };
+  const now = new Date().toISOString();
+  req.history.push({
+    stage: "payment",
+    action: "approved",
+    reason: reference ? `Payment reference ${reference}` : undefined,
+    created_at: now,
+  });
+  req.current_stage = nextStage(req, "payment");
   req.updated_at = now;
   write(list);
   return { ok: true as const, request: req };
