@@ -178,3 +178,76 @@
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
+
+/* Deep navy hero / feature panel with a gold hairline and soft inner glow. */
+@utility panel-navy {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  color: var(--primary-foreground);
+  background:
+    radial-gradient(700px 320px at 90% -30%, color-mix(in oklab, var(--gold) 26%, transparent), transparent 65%),
+    linear-gradient(150deg, var(--primary), color-mix(in oklab, var(--primary) 72%, black));
+  box-shadow:
+    0 24px 60px -30px color-mix(in oklab, var(--primary) 60%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--gold) 30%, transparent);
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0.85;
+  }
+}
+
+/* Raised paper card used for services and forms. */
+@utility card-paper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, var(--card), color-mix(in oklab, var(--card) 92%, var(--muted)));
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--primary) 8%, transparent);
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklab, var(--primary) 32%, transparent);
+    box-shadow: 0 18px 40px -24px color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+}
+
+@utility badge-gold {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: color-mix(in oklab, var(--gold) 70%, black);
+  background: color-mix(in oklab, var(--gold) 16%, transparent);
+  border: 1px solid color-mix(in oklab, var(--gold) 45%, transparent);
+  white-space: nowrap;
+}
+
+@utility step-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--gold) 18%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--gold) 50%, transparent);
+}
+
